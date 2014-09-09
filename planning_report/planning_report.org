@@ -1,0 +1,152 @@
+#+TITLE:     Information Flow Control in Haste
+#+AUTHOR:    \emph{Alexander Sjösten}
+#+EMAIL:     
+#+DATE:      \today
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:t toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:   
+#+LINK_HOME: 
+#+XSLT:
+#+LATEX_HEADER: \usepackage{amsmath}
+#+LATEX_HEADER: \usepackage[top=2cm]{geometry}
+#+LATEX_HEADER: \usepackage{listings}
+#+LATEX_HEADER: \usepackage{subcaption}
+#+LATEX_HEADER: \usepackage[style=numeric,sorting=nyt]{biblatex}
+#+LATEX_HEADER: \addbibresource{references.bib}
+
+\newpage
+#+LATEX: \tableofcontents
+\newpage
+
+* Background
+When creating a web application there are many security aspects a developer must consider. For an attacker, the amount of different attacks that can be directed towards a web application are many. One such example is Cross Site Scripting (XSS)\cite{owaspxss} where an attacker can inject malicious code and gain access to sensitive information retained by the browser, e.g. cookies and session tokens. Securing sensitive data is crucial.
+
+When developing a web application, a typical language to work in is JavaScript. Even though JavaScript is often used\cite{js-used}, it has one major disadvantage - the type system. JavaScript is dynamically typed\cite{js-about}, which means that errors found at compile time in a statically typed language will not be found until the code is run. Errors should be caught as soon as possible\cite{dynamic-static}, so e.g. adding an integer to a boolean value is best caught before the code is run. The following Java code would be caught at compile time:
+\lstset{language=Java}
+\begin{lstlisting}
+int a = 2;
+boolean b = true;
+a + b;  // This should not be allowed to be run
+\end{lstlisting}
+whereas the corresponding JavaScript code will run as if there are no errors:
+\begin{lstlisting}
+var a = 2;
+var b = true;
+a + b;  // This will evaluate to 3
+\end{lstlisting}
+and could potentially produce bugs.
+\newline
+Different tools have been developed to help strengthen the JavaScript type system. Examples include:
+\begin{itemize}
+\item \textbf{TypeScript}\cite{typescript}, a typed superset of JavaScript that compiles to plain JavaScript.
+\item \textbf{TeJaS}\cite{tejas-art,tejas-git}, which allows you to annotate type signatures as comments in the JavaScript code and then type checks the code.
+\item \textbf{GHCJS}\cite{ghcjs} and \textbf{Haste}\cite{haste-lang,haste-symposium}, which compiles from Haskell, a statically typed, high-level functional programming language\cite{haskell}, to JavaScript.
+\end{itemize}
+When using Haste, the developer writes what seems as one program but Haste will see which parts belong to the server side and create a binary file for the server and which parts belong to the client side and produce JavaScript code for the client. 
+\newline
+For this project, Haste will be used and by using Haste when developing a web application, the web application is guaranteed to be type-safe.
+
+Knowing a web application is type-safe is good, but it is not enough. When creating a web application it is not uncommon to use third-party libraries. However, ensuring that these third-party libraries are safe demands a analysis of the entire code base which is not only tiresome but also error prone. Fortunately, a system called JSFlow\cite{jsflow,jsflow-sac14,jsflow-csf12} has been developed to track information flow in JavaScript\cite{jsflow-sac14}. As explained in \cite{ifc-jsac}, the principles of information-flow security is to tag data in one of two sensitivity levels, \emph{high} and \emph{low} sensitivity. Data in a low sensitivity context are not allowed to gain access to data in a high sensitivity context but data in a high sensitivity context are allowed to gain access to data in a low sensitivity context. It is crucial to keep track of and prevent both explicit flows (Figure \ref{fig:expflow}) and implicit flows (Figure \ref{fig:impflow}). In Figure \ref{fig:expflow}, the flow is explicit since the value of the high variable \emph{h} is assigned to the low variable \emph{l}. In Figure \ref{fig:impflow}, the flow is implicit since, depending on the value of \emph{l} after the if-statement, information about the value of \emph{h} can be obtained (if \emph{l} is 0 then \emph{h} was even, otherwise \emph{h} was odd). The technique to validate if there are information leakage is explained in \cite{ifc-jsac}.
+
+\begin{figure}[H]
+\captionsetup[subfigure]{singlelinecheck=off,justification=raggedright}
+\begin{subfigure}[b]{0.5\textwidth}
+\begin{lstlisting}[numbers=left]
+l := h
+\end{lstlisting}
+\caption{Explicit flow}
+\label{fig:expflow}
+\end{subfigure}
+\begin{subfigure}[b]{0.5\textwidth}
+\begin{lstlisting}[numbers=left]
+h := h mod 2;
+l := 0;
+if h = 1 then l := 1;
+         else skip;
+\end{lstlisting}
+\caption{Implicit flow}
+\label{fig:impflow}
+\end{subfigure}
+\caption{Implicit and explicit flow}
+\end{figure}
+
+Combining the type safety one can get with using Haste with a library that implements the information flow control techniques can make for more secure web applications.
+* Aim of the project
+During this project, the goal is to have a version of the library that is as complete as possible. The main goal is that everything allowed by the library will be allowed by JSFlow. Special focus will be on securing the binary file for the server side that Haste produces since JSFlow only checks the actual JavaScript code.
+* Definition of the project
+There have been some information flow control libraries developed within Haskell already. The one that resembles the given problem the most is LIO\cite{lio-paper,lio-github}, a library for dynamic information flow control implemented in Haskell. In LIO, values are associated with labels and the labels are then manipulated at run-time. LIO is dynamic in the sence that labels can be created and manipulated during run-time. For this project, a library more focused towards Haste will be created.
+** The library
+Even though LIO will be looked at, the library created will not have to be as dynamic since users will not be able to add information during run-time. Instead, the library should look at the code that Haste will compile (i.e. the .Hs file) and ensure that it is free of information leakage. If it is free from information leakage, Haste should be allowed to produce JavaScript code that is valid for JSFlow. This means that the library must in some way tell Haste which variables are sensitive in order for the \emph{upg} function (see Figure \ref{fig:upg}) to be called. The library will do its job before the actual JavaScript code is generated. The created library will be stand-alone, i.e. the information flow control should be checked independent of Haste.
+** Code generation
+The code generation of Haste must be slightly altered. Using the library, variables and computations will be annotated as either low (i.e. non-sensitive) or high (i.e. sensitive) values. Figure \ref{fig:upg} shows the differences in JavaScript code.
+\begin{figure}[H]
+\begin{lstlisting}
+var l = 2; // Variable l is a low variable of value 2
+var h = upg(42); // Variable h is a high variable of value 42
+var t = l + h; // Variable t will be a high variable due to h being high
+\end{lstlisting}
+\caption{Creating high and low variables in JavaScript}
+\label{fig:upg}
+\end{figure}
+The code generation of Haste will need some help from the library in order to know which variables that should be high and which variables that should be low. The different steps of the compilation and code generation of Haste is showed in Figure \ref{fig:system}. It is only in the final step, the code generation to JavaScript, that will be altered.
+\begin{figure}[H]
+\begin{tabular}{|c|c|c|}
+\hline
+Step & Operation & GHC/Haste \\
+\hline
+1 & Parse & GHC \\
+2 & Type check & GHC \\
+3 & Desugar & GHC \\
+4 & Intermediate code generation & GHC \\
+5 & Optimization & GHC \\
+6 & Intermediate code generation (JS AST) & Haste \\
+7 & Optimization & Haste \\
+8 & Code generation to JavaScript & Haste \\
+\hline
+\end{tabular}
+\caption{The different levels of the system}
+\label{fig:system}
+\end{figure}
+** Final thoughts/summary of definition
+Since the first five steps in Figure \ref{fig:system} is within GHC, they are not relevant for this project. However, what is important to define is when the library code should be run. Should Haste be allowed to do anything before the library code has been run and information flow security is guaranteed? It seems illogical to have Haste do anything before it is known if the application is safe, so the library code should be run as step six.
+
+The code generation to JavaScript within Haste must be altered if a user uses the library. This is a step that should not be too difficult, it is a matter of calling the \emph{upg} function on the high variables and JSFlow will help take care of the rest. The alterations in Haste will mostly focus on the JS AST (the AST must contain information of high and low value variables) and the code generation to JavaScript.
+
+Even though there has been projects trying to solve adding a better type system to JavaScript or producing information flow solutions, a mixture of the two are not available at the moment. If this project succeeds, it will be a good step towards creating safe and secure web applications.
+* Limitations
+The library will not support strict mode nor JSON in Javascript since JSFlow does not support any of those features.
+\newline
+Also, the library will be guaranteed to work for Haste version 0.4 since it is the latest stable Haste version and will be compiled using GHC 7.8.3.
+* Method of accomplishment
+This project will have an iterative development method. A prototype will be developed early on to test different approaches to solve the problem and once a design decision has been made, the actual implementation towards the Haste system will begin. The report will be written along side the development towards the Haste system.
+\newline
+Once the actual implementation begins, the following quote can describe how the implementation will work for this project:
+\begin{quote}
+\emph{Implement stuff until you run out of time.}
+\newline
+- Jean-Philippe Bernardy
+\end{quote}
+* Time plan
+Unfortunately, Chalmers seems to be rather poor with updating information and has no available information on the Master Thesis page about the mandatory lectures that should be attended. However, I hope they will be in the middle of the 20 weeks and hope to attend them around the mid-point of the project.
+#+ATTR_LATEX: :placement [H]
+|---+-----------------+------------------------|
+|   | Week (date)     | Activity               |
+|---+-----------------+------------------------|
+| / | <>              | <>                     |
+|   | 1 (7/9)         | Planning report done   |
+|   | 7 (17/10)       | Prototype testing done |
+|   | 10 (27-31/10)   | Mid-Project report     |
+|   | 11-12 (3-14/11) | Attend presentations   |
+|   | 15 (1-5/12)     | Opposition             |
+|   | 20 (12-16/1)    | Present project        |
+|---+-----------------+------------------------|
+
+\pagebreak
+\section*{References}
+#+LATEX: \printbibliography[heading=none]

@@ -1,0 +1,95 @@
+#+TITLE:     Project proposal for Master's Thesis in Computer Science
+#+AUTHOR:    \emph{Alexander Sjösten}
+#+EMAIL:     
+#+DATE:      \today
+#+DESCRIPTION:
+#+KEYWORDS:
+#+LANGUAGE:  en
+#+OPTIONS:   H:3 num:t toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: noexport
+#+LINK_UP:   
+#+LINK_HOME: 
+#+XSLT:
+#+LATEX_HEADER: \usepackage{amsmath}
+#+LATEX_HEADER: \usepackage[top=2cm]{geometry}
+
+* Initial description of the project
+When creating a web application there are many different ways for attackers to read data that should be private. Protection of the confidentiality is crucial.
+\newline
+\newline
+JavaScript is one of the most popular languages when creating a web application, but it suffers from several drawbacks. First, the type system of JavaScript is far from adequate and second, there used to be no way of ensuring confidentiality of the data within the web application. A solution to the first problem has been developed at Chalmers with the creation of Haste, a compiler that takes code written in Haskell, a high-level and type safe programming language, and compiles it to JavaScript. This has several advantages, namely:
+\begin{itemize}
+\item The strict type-system of Haskell guarantees that the application will be type-safe
+\item Writing of the code is simplified since a library in Haste called Haste.App takes care of dividing the code for server side and client side. For the programmer it is seen as one single application
+\end{itemize}
+However, Haste does not guarantee confidentiality.
+\newline
+\newline
+An interpreter called JSFlow has been developed within the Language-Based Security, a project based on the research of Prof. Andrei Sabelfeld. JSFlow is written in JavaScript and will detect potential information leakages and ensures confidentialty. The data is annotated as high or low security context and JSFlow ensures that information within a high context is never leaked or modified by a low context. Having Haste produce annotated code that can be run by JSFlow will not only ensure the code is type-safe but also data confidentiality.
+\newline
+\newline
+The project will be to extend Haste in order to be able to create JSFlow annotated code to ensure confidentiality. This will be done in two major steps, namely:
+\begin{itemize}
+\item Create a tracking system which can be used at compile-time to ensure no leakage of information (this will be to ensure the binary file for the server side is free from information leakage and to ensure that commands from the client will not lead to information leakage)
+\item Produce code for the client side that is annotated in a proper way to be able to use JSFlow for tracking the information and ensuring confidentiality
+\end{itemize}
+\newline
+\newline
+The project goal will be that if a program type checks in the created library then it will be guaranteed that JSFlow will allow the produced web application.
+\newline
+One big focus of the project will be to ensure that traffic from the client to the server will not lead to information leakage at compile time. The information flow control will not ensure that the traffic is not altered on the path from the client to the server, but the request should not leak any information no matter if the traffic is altered or not. 
+* Limitations of the project
+The project will have some limitations. The limitations when it comes to the software used will be:
+Some limitations worth noting:
+\begin{itemize}
+\item The version of haste for the project will be version 0.4 since it is the most recent stable release to date.
+\item The ghc version for the project will be version 7.8.3 since it is the most recent version of ghc that can support haste.
+\end{itemize}
+\newline
+When it comes to JSFlow, JSFlow supports the full Ecma-262 v5 standard apart from strict mode. Also, in the public version, JSON is not supported. Also, given the time limitation of the project it is not guaranteed the library will support everything JSFlow supports.
+* Related courses
+This project will be closely related to several courses on Chalmers, namely:
+\begin{itemize}
+\item \textbf{Language-Based Security}, where the concepts of Information Flow Control is taught.
+\item \textbf{Programming Language Technology} and \textbf{Compiler Construction}, since the project will be about extending a compiler (Haste). Ifthe project of those courses were completed in Haskell, it is a big advantage.
+\item \textbf{Introduction to Functional Programming} since it teaches the foundations of the functional programming paradigm which will be used.
+\item \textbf{Advanced Functional Programming} since the project will be done using Haskell and will use several of the more advanced features of the language. It might not be needed if one has a course in Functional Programming and Compiler Construction if the project in Compiler Construction is made in Haskell.
+\item \textbf{Programming Paradigms} which teaches how to convert between and reason about different paradigms.
+\end{itemize}
+* Literature
+** Books
+\textbf{Compilers Principles, Techniques, \& Tools} by Alfred V. Aho, Monica S. Lam, Ravi Sethi and Jeffrey D. Ullman.
+\newline
+Can be usefull when working with the compiler part of the project.
+\newline
+\newline
+\textbf{Real World Haskell} by Bryan O'Sullivan, Don Stewart and John Goerzen.
+\newline
+Will be usefull when doing more advanced things (e.g. own Monads, Functors etc.) in Haskell.
+** Research papers
+\textbf{Flexible Dynamic Information Flow Control in Haskell} by Deian Stefan, Alejandro Russo, John C. Mitchell and David Mazieres.
+\newline
+A library implementation for IFC in Haskell. The paper will be usefull when trying to see a different type of implementation which is targeted towards an arbitrary system instead of a specific system.
+\newline
+\newline
+\textbf{JSFlow: Tracking Information Flow in JavaScript and its APIs} by Daniel Hedin, Arnar Birgisson, Luciano Bello and Andrei Sabelfeld.
+\newline
+Information about JSFlow can be found in this paper.
+\newline
+\newline
+\textbf{Language-Based Information-Flow Security} by Andrei Sabelfeld and Andrew C. Myers.
+\newline
+The general ideas of information flow control is presented in this paper. It also presents rules for a security-type system.
+\newline
+\newline
+\textbf{A Seamless, Client-Centric Programming Model for Type Safe Web Applications} by Anton Ekblad and Koen Claessen.
+\newline
+The basis behind Haste, how it is build and why it should be used.
+\newline
+\newline
+\textbf{Towards a Declarative Web} by Anton Ekblad.
+\newline
+A general introduction to Haste and why it should be used. Also some explanations of how Haste works behind the scene.

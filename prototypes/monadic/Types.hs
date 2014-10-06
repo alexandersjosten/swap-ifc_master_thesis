@@ -5,13 +5,14 @@ module Types where
 import Control.Applicative
 import Control.Monad
 
--- | If the level is High, it means private. Low means public.
-data Level = High | Low
+-- | High datatype for private values.
+data High = High
 
+-- | Low datatype for public values.
+data Low = Low
 
 -- | The Flow type keeps track of the information flow.
-newtype Flow level a = Flow (State (level, a) (InternalState a))
-
+newtype Flow level a = Flow (IO a)
 
 -- Monadic stuff..
 instance Monad (Flow a) where

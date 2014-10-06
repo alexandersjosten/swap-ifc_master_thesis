@@ -15,7 +15,7 @@ data Low = Low
 newtype Flow level a = Flow (IO a)
 
 -- Monadic stuff..
-instance Monad (Flow a) where
+instance Monad (Flow tag) where
   -- return :: a -> m a
   return a = undefined
 

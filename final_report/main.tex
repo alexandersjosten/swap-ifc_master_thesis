@@ -1,0 +1,51 @@
+%% Template from Jonas Einarsson, bror.einarsson.net/chalmersthesistemplate/
+\documentclass[11pt,a4paper]{article}
+
+% Packages and commands file
+\input{include/packagescommands}
+
+% Settings (Metadata)
+\input{include/settings}
+
+\begin{document}
+
+% Title page, abstract, acknowledgements
+\includepdf[pages={-}]{images/frontpage.pdf}
+\input{chapters/abstract}
+\newpage
+\input{chapters/acknowledgements}
+
+% Table of contents
+\newpage
+\pagenumbering{roman}
+\setcounter{page}{1}
+\pagestyle{fancy}
+\setspecialhdr
+\tableofcontents
+
+% Main area
+\newpage
+\setdefaulthdr
+\pagenumbering{arabic}	
+\setcounter{page}{1}
+
+% Content
+\input{chapters/introduction}
+
+\newpage
+\clearpage
+
+% Nocite references
+\nocite{Brody1996}
+
+\bibliography{references} % references.bib
+\addcontentsline{toc}{chapter}{\numberline{} Bibliography} % For pdf
+\setspecialhdr
+
+\newpage
+
+% Appendices
+\appendix
+\setdefaulthdr
+%\input{include/appendix1}
+\end{document}

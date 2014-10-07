@@ -12,7 +12,7 @@ data High = High
 data Low = Low
 
 -- | The Flow type keeps track of the information flow.
-newtype Flow level a = Flow (IO a)
+newtype Flow tag a = Flow (IO a)
 
 -- Monadic stuff..
 instance Monad (Flow tag) where
@@ -23,12 +23,12 @@ instance Monad (Flow tag) where
   (>>=) a f = undefined
 
 -- Functor
-instance Functor (Flow a) where
+instance Functor (Flow tag) where
   -- fmap :: (a -> b) -> f a -> f b
   fmap = undefined
 
 -- Applicative
-instance Applicative (Flow a) where
+instance Applicative (Flow tag) where
   -- pure :: a -> f a
   pure = return
 

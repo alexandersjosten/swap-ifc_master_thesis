@@ -30,7 +30,7 @@ instance Monad (Flow tag) where
 -- Functor
 instance Functor (Flow tag) where
   -- fmap :: (a -> b) -> f a -> f b
-  fmap = undefined
+  fmap f (Flow ioa) = Flow $ ioa >>= return . f
 
 -- Applicative
 instance Applicative (Flow tag) where

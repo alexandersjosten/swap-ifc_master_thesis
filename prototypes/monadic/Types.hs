@@ -17,10 +17,15 @@ newtype Flow tag a = Flow (IO a)
 -- Monadic stuff..
 instance Monad (Flow tag) where
   -- return :: a -> m a
-  return a = undefined
+  return = Flow . return
 
   -- (>>=) :: m a -> (a -> m b) -> m b
-  (>>=) a f = undefined
+  -- (>>=) :: Flow tag a -> (a -> Flow tag b) -> Flow tag b
+  -- (>>=) :: Flow tag (IO a) -> (a -> Flow tag (IO b)) -> Flow tag (IO b)
+  (Flow ioa) >>= f = Flow $ do
+    a <- ioa
+    case (f a) of
+      Flow iob -> iob
 
 -- Functor
 instance Functor (Flow tag) where

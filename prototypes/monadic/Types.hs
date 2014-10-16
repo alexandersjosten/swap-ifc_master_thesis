@@ -6,10 +6,10 @@ import Control.Applicative
 import Control.Monad
 
 -- | High datatype for private values.
-data High = High
+data High
 
 -- | Low datatype for public values.
-data Low = Low
+data Low
 
 -- | The Flow type keeps track of the information flow.
 newtype Flow tag a = Flow (IO a)

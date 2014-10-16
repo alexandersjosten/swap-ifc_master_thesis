@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies #-}
 
 module Types where
 
@@ -39,3 +39,41 @@ instance Applicative (Flow tag) where
 
   -- (<*>) :: f (a -> b) -> f a -> f b
   (<*>) = ap
+
+infixl 7 .*.
+infixl 6 .+., .-.
+-- Num instances for Flow
+class FlowNum t1 t2 t3 | t1 t2 -> t3 where
+  (.+.) :: Num a => Flow t1 a -> Flow t2 a -> Flow t3 a
+  (.+.) = calcNumFlow (+)
+
+  (.*.) :: Num a => Flow t1 a -> Flow t2 a -> Flow t3 a
+  (.*.) = calcNumFlow (*)
+  
+  (.-.) :: Num a => Flow t1 a -> Flow t2 a -> Flow t3 a
+  (.-.) = calcNumFlow (-)
+
+  fNeg :: Num a => Flow t1 a -> Flow t1 a
+  fNeg = appNumFlow negate
+
+  fAbs :: Num a => Flow t1 a -> Flow t1 a
+  fAbs = appNumFlow abs
+
+  fSig :: Num a => Flow t1 a -> Flow t1 a
+  fSig = appNumFlow signum
+
+instance FlowNum High High High
+instance FlowNum High Low High
+instance FlowNum Low High High
+instance FlowNum Low Low Low
+
+calcNumFlow :: Num a => (a -> a -> a) -> Flow t1 a -> Flow t2 a -> Flow t3 a
+calcNumFlow op (Flow ioa1) (Flow ioa2) = Flow $ do
+  a1 <- ioa1
+  a2 <- ioa2
+  return $ op a1 a2
+
+appNumFlow :: Num a => (a -> a) -> Flow t1 a -> Flow t1 a
+appNumFlow f (Flow ioa) = Flow $ do
+  a <- ioa
+  return $ f a

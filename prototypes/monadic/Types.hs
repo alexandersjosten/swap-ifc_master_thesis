@@ -121,3 +121,55 @@ logicBoolFlow op (Flow io1) (Flow io2) = Flow $ do
   return $ op a1 a2
 
 --------------------------------------------------------------------------------
+
+-- Eq instance for Flow
+infix 4 .==., ./=., .<., .<=., .>., .>=.
+class FlowEqOrd t1 t2 t3 | t1 t2 -> t3 where
+  -- | Binary equals for Flow
+  (.==.) :: Eq a => Flow t1 a -> Flow t2 a -> Flow t3 Bool
+  (.==.) = compareFlow (==)
+
+  -- | Binary not equals for Flow
+  (./=.) :: Eq a => Flow t1 a -> Flow t2 a -> Flow t3 Bool
+  (./=.) = compareFlow (/=)
+
+  -- | Binary less than for Flow
+  (.<.) :: Ord a => Flow t1 a -> Flow t2 a -> Flow t3 Bool
+  (.<.) = compareFlow (<)
+
+  -- | Binary greater equals
+  (.>=.) :: Ord a => Flow t1 a -> Flow t2 a -> Flow t3 Bool
+  (.>=.) = compareFlow (>=)
+
+  -- | Binary less equals
+  (.<=.) :: Ord a => Flow t1 a -> Flow t2 a -> Flow t3 Bool
+  (.<=.) = compareFlow (<=)
+
+  -- | Binary greater than
+  (.>.) :: Ord a => Flow t1 a -> Flow t2 a -> Flow t3 Bool
+  (.>.) = compareFlow (>)
+
+  -- | max function for Flow
+  fMax :: Ord a => Flow t1 a -> Flow t2 a -> Flow t3 a
+  fMax = maxMinFlow max
+
+  -- | min function for Flow
+  fMin :: Ord a => Flow t1 a -> Flow t2 a -> Flow t3 a
+  fMin = maxMinFlow min
+
+instance FlowEqOrd High High High
+instance FlowEqOrd High Low High
+instance FlowEqOrd Low High High
+instance FlowEqOrd Low Low Low
+
+compareFlow :: (a -> a -> Bool) -> Flow t1 a -> Flow t2 a -> Flow t3 Bool
+compareFlow op (Flow ioa) (Flow iob) = Flow $ do
+  a <- ioa
+  b <- iob
+  return $ op a b
+
+maxMinFlow :: (a -> a -> a) -> Flow t1 a -> Flow t2 a -> Flow t3 a
+maxMinFlow op (Flow ioa) (Flow iob) = Flow $ do
+  a <- ioa
+  b <- iob
+  return $ op a b

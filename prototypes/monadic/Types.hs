@@ -94,11 +94,11 @@ infixr 2 .||.
 class FlowBool t1 t2 t3 | t1 t2 -> t3 where
   -- | Binary logic AND for Flow
   (.&&.) :: Flow t1 Bool -> Flow t2 Bool -> Flow t3 Bool
-  (.&&.) = compareFlow (&&)
+  (.&&.) = logicBoolFlow (&&)
 
   -- | Binary logic OR for Flow
   (.||.) :: Flow t1 Bool -> Flow t2 Bool -> Flow t3 Bool
-  (.||.) = compareFlow (||)
+  (.||.) = logicBoolFlow (||)
 
   -- | Unary logic NOT for Flow
   fNot :: Flow t1 Bool -> Flow t1 Bool
@@ -111,11 +111,11 @@ instance FlowBool High Low High
 instance FlowBool Low High High
 instance FlowBool Low Low Low
 
-compareFlow :: (Bool -> Bool -> Bool)
-            -> Flow t1 Bool
-            -> Flow t2 Bool
-            -> Flow t3 Bool
-compareFlow op (Flow io1) (Flow io2) = Flow $ do
+logicBoolFlow :: (Bool -> Bool -> Bool)
+              -> Flow t1 Bool
+              -> Flow t2 Bool
+              -> Flow t3 Bool
+logicBoolFlow op (Flow io1) (Flow io2) = Flow $ do
   a1 <- io1
   a2 <- io2
   return $ op a1 a2

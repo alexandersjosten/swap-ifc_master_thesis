@@ -40,25 +40,33 @@ instance Applicative (Flow tag) where
   -- (<*>) :: f (a -> b) -> f a -> f b
   (<*>) = ap
 
+--------------------------------------------------------------------------------
+
+-- Num instance for Flow
 infixl 7 .*.
 infixl 6 .+., .-.
--- Num instances for Flow
 class FlowNum t1 t2 t3 | t1 t2 -> t3 where
+  -- | Binary addition operator for Flow
   (.+.) :: Num a => Flow t1 a -> Flow t2 a -> Flow t3 a
   (.+.) = calcNumFlow (+)
 
+  -- | Binary multiplication operator for Flow
   (.*.) :: Num a => Flow t1 a -> Flow t2 a -> Flow t3 a
   (.*.) = calcNumFlow (*)
-  
+
+  -- | Binary subtraction operator for Flow
   (.-.) :: Num a => Flow t1 a -> Flow t2 a -> Flow t3 a
   (.-.) = calcNumFlow (-)
 
+  -- | Unary negation for Flow
   fNeg :: Num a => Flow t1 a -> Flow t1 a
   fNeg = appNumFlow negate
 
+  -- | Unary absolute value for Flow
   fAbs :: Num a => Flow t1 a -> Flow t1 a
   fAbs = appNumFlow abs
 
+  -- | Unary signum for Flow
   fSig :: Num a => Flow t1 a -> Flow t1 a
   fSig = appNumFlow signum
 

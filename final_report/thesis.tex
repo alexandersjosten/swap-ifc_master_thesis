@@ -26,7 +26,7 @@
 % Main area
 \newpage
 \setdefaulthdr
-\pagenumbering{arabic}	
+\pagenumbering{arabic}
 \setcounter{page}{1}
 
 % Content
@@ -39,9 +39,9 @@
 \input{chapters/related}
 \newpage
 \clearpage
-
-% Nocite references
-\nocite{Brody1996}
+\input{chapters/prototypes}
+\newpage
+\clearpage
 
 \bibliography{references} % references.bib
 \addcontentsline{toc}{chapter}{\numberline{} Bibliography} % For pdf
@@ -50,7 +50,7 @@
 \newpage
 
 % Appendices
-\appendix
-\setdefaulthdr
+%\appendix
+%\setdefaulthdr
 %\input{include/appendix1}
 \end{document}

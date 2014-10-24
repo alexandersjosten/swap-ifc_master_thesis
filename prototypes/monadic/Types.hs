@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies #-}
+{-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies, GADTs #-}
 
 module Types where
 
@@ -59,15 +59,15 @@ class FlowNum t1 t2 t3 | t1 t2 -> t3 where
   (.-.) = calcNumFlow (-)
 
   -- | Unary negation for Flow
-  fNeg :: Num a => Flow t1 a -> Flow t1 a
+  fNeg :: (Num a, t1~t2, t1~t3) => Flow t1 a -> Flow t3 a
   fNeg = appNumFlow negate
 
   -- | Unary absolute value for Flow
-  fAbs :: Num a => Flow t1 a -> Flow t1 a
+  fAbs :: (Num a, t1~t2, t1~t3) => Flow t1 a -> Flow t3 a
   fAbs = appNumFlow abs
 
   -- | Unary signum for Flow
-  fSig :: Num a => Flow t1 a -> Flow t1 a
+  fSig :: (Num a, t1~t2, t1~t3) => Flow t1 a -> Flow t3 a
   fSig = appNumFlow signum
 
 instance FlowNum High High High

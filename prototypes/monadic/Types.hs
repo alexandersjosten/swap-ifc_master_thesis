@@ -101,7 +101,7 @@ class FlowBool t1 t2 t3 | t1 t2 -> t3 where
   (.||.) = logicBoolFlow (||)
 
   -- | Unary logic NOT for Flow
-  fNot :: Flow t1 Bool -> Flow t1 Bool
+  fNot ::(t1~t2, t1~t3) => Flow t1 Bool -> Flow t3 Bool
   fNot (Flow ioa) = Flow $ do
     a <- ioa
     return $ not a

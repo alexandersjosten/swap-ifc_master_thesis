@@ -88,6 +88,35 @@ appNumFlow f (Flow ioa) = Flow $ do
 
 --------------------------------------------------------------------------------
 
+infixl 7 ./.
+class FlowFrac t1 t2 t3 | t1 t2 -> t3 where
+  -- | Binary division operator for Flow
+  (./.) :: Fractional a => Flow t1 a -> Flow t2 a -> Flow t3 a
+  (./.) = calcFracFlow (/)
+
+  fRecip :: (Fractional a, t1~t2, t1~t3) => Flow t1 a -> Flow t3 a
+  fRecip (Flow ioa) = Flow $ do
+    a <- ioa
+    return $ recip a
+
+  fFromRational :: (Fractional a, t1~t2, t1~t3) => Flow t1 Rational -> Flow t3 a
+  fFromRational (Flow ior) = Flow $ do
+    r <- ior
+    return $ fromRational r
+
+instance FlowFrac High High High
+instance FlowFrac High Low High
+instance FlowFrac Low High High
+instance FlowFrac Low Low Low
+
+calcFracFlow :: Fractional a => (a -> a -> a) -> Flow t1 a -> Flow t2 a -> Flow t3 a
+calcFracFlow op (Flow ioa1) (Flow ioa2) = Flow $ do
+  a1 <- ioa1
+  a2 <- ioa2
+  return $ op a1 a2
+
+--------------------------------------------------------------------------------
+
 -- Bool instance for Flow
 infixr 3 .&&.
 infixr 2 .||.

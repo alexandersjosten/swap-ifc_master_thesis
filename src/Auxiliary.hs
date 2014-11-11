@@ -13,3 +13,9 @@ mkHigh = return
 -- | creates a Flow with Low level given a value
 mkLow :: a -> Flow Low a
 mkLow = return
+
+runFlow :: Flow t () -> IO ()
+runFlow (Flow ioa) = ioa
+
+runHigh :: Flow High () -> Flow Low ()
+runHigh (Flow ioa) = Flow ioa

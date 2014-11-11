@@ -2,5 +2,40 @@
 \label{chapter:implementation}
 \subsection{The Flow type}
 \label{sec:flow}
+\begin{figure}[h]
+  \lstset{language=Haskell}
+  \begin{lstlisting}
+    newtype Flow tag a = Flow (IO a)
+  \end{lstlisting}
+  \caption{The final Flow type}
+  \label{fig:final_flow}
+\end{figure}
 
+\subsubsection{Monad instance}
+
+\subsubsection{Functor instance}
+
+\subsubsection{Applicative instance}
+
+\begin{figure}[h]
+  \lstset{language=Haskell}
+  \begin{lstlisting}
+    instance Monad (Flow tag) where
+      return = Flow . return
+
+      (Flow ioa) >>= f = Flow $ do
+        a <- ioa
+        case (f a) of
+          Flow iob -> iob
+
+    instance Functor (Flow tag) where
+      fmap f (Flow ioa) = Flow $ ioa >>= return . f
+
+    instance Applicative (Flow tag) where
+      pure  = return
+      (<*>) = ap
+  \end{lstlisting}
+  \caption{Flow Monad, Functor and Applicative instances}
+  \label{fig:flow_instances}
+\end{figure}
 \subsection{Something more....}

@@ -1,5 +1,5 @@
 \section{Background}
-As mentioned in Chapter~\ref{chapter:intro}, JavaScript has several shortcommings. Two of the tools that will be used in this project is Haste\cite{haste-lang} and JSFlow\cite{jsflow,jsflow-csf12,jsflow-sac14}.
+As mentioned in Chapter~\ref{chapter:intro}, JavaScript has several shortcommings. Two of the tools that will be used in this project are Haste\cite{haste-lang} and JSFlow\cite{jsflow,jsflow-csf12,jsflow-sac14}.
 \subsection{Problems with JavaScript - part deux}
 As mentioned in Chapter~\ref{chapter:intro}, from a security standpoint JavaScript suffers from weak dynamic typing and having access to sensitive information in the browser.
 \subsubsection{Weak dynamic typing}
@@ -117,10 +117,15 @@ When creating a web application in JavaScript that JSFlow should be able to chec
 
 \begin{figure}[h]
   \begin{lstlisting}
-    var l = 2;       // Variable l is a low variable of value 2
-    var h = upg(42); // Variable h is a high variable of value 42
-    var t = l + h;   // Variable t must be a high variable due to
-                     // h being high
+    // Variable l is a low variable of value 2
+    var l = 2;
+
+    // Variable h is a high variable of value 42
+    var h = upg(42);
+
+    /* Variable t must be a high variable due to h
+       being high */
+    var t = l + h;
   \end{lstlisting}
   \caption{Creating high and low variables in JavaScript with JSFlow}
   \label{fig:upg}

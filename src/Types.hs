@@ -1,7 +1,9 @@
-{-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies, GADTs #-}
+{-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies, GADTs, CPP,
+    FlexibleInstances #-}
 
 module Types where
 
+import CodeGen
 import Control.Applicative
 import Control.Monad
 
@@ -14,8 +16,38 @@ data Low
 -- | The Flow type keeps track of the information flow.
 newtype Flow tag a = Flow (IO a)
 
--- Monadic stuff..
-instance Monad (Flow tag) where
+-- Monadic stuff for High flow..
+instance Monad (Flow High) where
+  -- return :: a -> m a
+#ifdef __HASTE__
+  return = Flow . upg
+#else
+  return = Flow . return
+#endif
+
+  -- (>>=) :: m a -> (a -> m b) -> m b
+  -- (>>=) :: Flow tag a -> (a -> Flow tag b) -> Flow tag b
+  -- (>>=) :: Flow tag (IO a) -> (a -> Flow tag (IO b)) -> Flow tag (IO b)
+  (Flow ioa) >>= f = Flow $ do
+    a <- ioa
+    case (f a) of
+      Flow iob -> iob
+
+-- Functor
+instance Functor (Flow High) where
+  -- fmap :: (a -> b) -> f a -> f b
+  fmap f (Flow ioa) = Flow $ ioa >>= return . f
+
+-- Applicative
+instance Applicative (Flow High) where
+  -- pure :: a -> f a
+  pure = return
+
+  -- (<*>) :: f (a -> b) -> f a -> f b
+  (<*>) = ap
+
+-- Monadic stuff for Low flow..
+instance Monad (Flow Low) where
   -- return :: a -> m a
   return = Flow . return
 
@@ -28,12 +60,12 @@ instance Monad (Flow tag) where
       Flow iob -> iob
 
 -- Functor
-instance Functor (Flow tag) where
+instance Functor (Flow Low) where
   -- fmap :: (a -> b) -> f a -> f b
   fmap f (Flow ioa) = Flow $ ioa >>= return . f
 
 -- Applicative
-instance Applicative (Flow tag) where
+instance Applicative (Flow Low) where
   -- pure :: a -> f a
   pure = return
 

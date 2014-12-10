@@ -59,10 +59,12 @@
 \addcontentsline{toc}{section}{\numberline{}References} % For pdf, remove \numberline{} ?
 \setspecialhdr
 
-\newpage
-
 % Appendices
-%\appendix
+\cleardoublepage
+\begin{appendices}
+  \input{include/appendix_instance}
+\end{appendices}
+%\csname phantomsection\endcsname
+%\addcontentsline{toc}{part}{\appendixname}
 %\setdefaulthdr
-%\input{include/appendix1}
 \end{document}

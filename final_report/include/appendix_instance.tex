@@ -1,0 +1,40 @@
+\section{Instance implementation}
+\label{app:instances}
+The implementation for Monad, Functor and Applicative for the Flow type became:
+\begin{lstlisting}[language=Haskell]
+  -- High Flow starts here!
+  instance Monad (Flow High) where
+  #ifdef __HASTE__
+    return = Flow . upg
+  #else
+    return = Flow . return
+  #endif
+
+    (Flow ioa) >>= f = Flow $ do
+      a <- ioa
+      case (f a) of
+        Flow iob -> iob
+
+  instance Functor (Flow High) where
+    fmap f (Flow ioa) = Flow $ ioa >>= return . f
+
+  instance Applicative (Flow High) where
+    pure = return
+    (<*>) = ap
+
+  -- Low Flow starts here!
+  instance Monad (Flow Low) where
+    return = Flow . return
+
+    (Flow ioa) >>= f = Flow $ do
+      a <- ioa
+      case (f a) of
+        Flow iob -> iob
+
+  instance Functor (Flow Low) where
+    fmap f (Flow ioa) = Flow $ ioa >>= return . f
+
+  instance Applicative (Flow Low) where
+    pure = return
+    (<*>) = ap
+\end{lstlisting}

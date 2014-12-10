@@ -1,81 +1,33 @@
 \section{Implementation}
 \label{chapter:implementation}
-Quick introduction...
+Quick introduction... something about implementing the standard operations..
+The Monad, Functor and Applicative instances for the High and Low Flow can be seen in \ref{app:instances}.
 \subsection{The Flow type}
 \label{sec:flow}
-The Flow type is defined as a newtype in Haskell, i.e. a definition that can only contain one constructor. The Flow type can be seen in Figure~\ref{fig:final_flow} and even though it has a tag in the definition (the left hand side), it is no tag on the right hand side. Instead, the tag is implemented as a phantom type\cite{haskell_phantom} which means that it can be checked by the type checker but not looked at by the user via e.g. pattern-matching. This means that from a user standpoint, the Flow type is simply a container for IO actions and the rules for the information flow control rules are implemented in the type checker alone. An example of how this can be done is seen in Figure~\ref{fig:add_five_flow}.
-\begin{figure}[h]
-  \lstset{language=Haskell}
-  \begin{lstlisting}
-    newtype Flow tag a = Flow (IO a)
-  \end{lstlisting}
-  \caption{The final Flow type}
-  \label{fig:final_flow}
-\end{figure}
-\begin{figure}[h]
-  \lstset{language=Haskell}
-  \begin{lstlisting}
-    addFiveFlow :: Flow High Int -> Flow High Int
-    addFiveFlow f = do
-      let b = mkHigh 5
-      f .+. b
-  \end{lstlisting}
-  \caption{Adding five to a High Flow}
-  \label{fig:add_five_flow}
-\end{figure}
-
+The Flow type is defined as a newtype in Haskell, i.e. a definition that can only contain one constructor. The Flow type became
+\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
+newtype Flow tag a = Flow (IO a)
+\end{lstlisting}
+and even though it has a tag in the definition (the left hand side), it does not contain a tag on the right hand side. Instead, the tag is implemented as a phantom type\cite{haskell_phantom} which means that it can be checked by the type checker but not looked at by the user via e.g. pattern-matching. This means that from a user standpoint, the Flow type is simply a container for IO actions and the rules for the information flow control rules are implemented in the type checker alone. An example of how to add five to a Flow of High value is
+\begin{lstlisting}[language=Haskell]
+addFiveFlow :: Flow High Int -> Flow High Int
+addFiveFlow f = do
+  let b = mkHigh 5
+  f .+. b
+\end{lstlisting}
+where a new Flow (the variable \emph{b}) is created and added with the given Flow \emph{f}.
 \subsubsection{Monad instance}
-
+Two separate monad instances was created in order to be able to handle potential code generation towards Haste, one for High and one for Low flow. If Haste was the compiler, then the High flow needed to be compiled with a call to the \emph{upg} function in JSFlow.
 \subsubsection{Functor instance}
 
 \subsubsection{Applicative instance}
-
-\begin{figure}[h]
-  \lstset{language=Haskell}
-  \begin{lstlisting}
-    instance Monad (Flow High) where
-    #ifdef __HASTE__
-      return = Flow . upg
-    #else
-      return = Flow . return
-    #endif
-
-      (Flow ioa) >>= f = Flow $ do
-        a <- ioa
-        case (f a) of
-          Flow iob -> iob
-
-    instance Functor (Flow High) where
-      fmap f (Flow ioa) = Flow $ ioa >>= return . f
-
-    instance Applicative (Flow High) where
-      pure = return
-      (<*>) = ap
-  \end{lstlisting}
-  \caption{Monad, Functor and Applicative instances for High Flow}
-  \label{fig:high_instances}
-\end{figure}
-\begin{figure}[h]
-  \lstset{language=Haskell}
-  \begin{lstlisting}
-    instance Monad (Flow Low) where
-      return = Flow . return
-
-      (Flow ioa) >>= f = Flow $ do
-        a <- ioa
-        case (f a) of
-          Flow iob -> iob
-
-    instance Functor (Flow Low) where
-      fmap f (Flow ioa) = Flow $ ioa >>= return . f
-
-    instance Applicative (Flow Low) where
-      pure = return
-      (<*>) = ap
-  \end{lstlisting}
-  \caption{Monad, Functor and Applicative instances for Low Flow}
-  \label{fig:low_instances}
-\end{figure}
 apofkapfokaspfok
+
+\subsection{Handling side effects}
+What should be allowed and how to do it?
+Stricter compared to JSFlow?
+What can JSFlow do?
+Check out side effects in LIO.
+
 \subsection{Incorporating with Haste}
 How to do this?

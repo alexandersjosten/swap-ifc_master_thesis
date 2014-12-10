@@ -1,7 +1,16 @@
 \section{Implementation}
 \label{chapter:implementation}
-Quick introduction... something about implementing the standard operations..
-The Monad, Functor and Applicative instances for the High and Low Flow can be seen in \ref{app:instances}.
+The implementation of the library consists of several modules which a user is allowed to use in order to create programs which are secure with regards to information flow control. The standard implementation of the library consists of a type \emph{Flow}, which is a flow in the program (i.e. data with a high or low tag). It also provides the user with standard operations, e.g. adding two flows if the flows are of such a type where addition is valid.
+
+Currently, the library has a representation of all the standard operations within the following Haskell types:
+\begin{itemize}
+  \item Num
+  \item Frac
+  \item Bool
+  \item Eq and Ord
+\end{itemize}
+
+The Monad, Functor and Applicative instances for the High and Low Flow can be seen in Appendix~\ref{app:instances} and and example of how the standard operations for the Num type in Haskell can be found in Appendix~\ref{app:num_type}.
 \subsection{The Flow type}
 \label{sec:flow}
 The Flow type is defined as a newtype in Haskell, i.e. a definition that can only contain one constructor. The Flow type became

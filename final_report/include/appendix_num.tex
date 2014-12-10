@@ -1,0 +1,50 @@
+\section{Num instance in Flow type}
+\label{app:num_type}
+\begin{lstlisting}[language=Haskell]
+-- Num instance for Flow
+infixl 7 .*.
+infixl 6 .+., .-.
+class FlowNum t1 t2 t3 | t1 t2 -> t3 where
+  -- | Binary addition operator for Flow
+  (.+.) :: Num a => Flow t1 a -> Flow t2 a -> Flow t3 a
+  (.+.) = calcNumFlow (+)
+
+  -- | Binary multiplication operator for Flow
+  (.*.) :: Num a => Flow t1 a -> Flow t2 a -> Flow t3 a
+  (.*.) = calcNumFlow (*)
+
+  -- | Binary subtraction operator for Flow
+  (.-.) :: Num a => Flow t1 a -> Flow t2 a -> Flow t3 a
+  (.-.) = calcNumFlow (-)
+
+  -- | Unary negation for Flow
+  fNeg :: (Num a, t1~t2, t1~t3) => Flow t1 a -> Flow t3 a
+  fNeg = appNumFlow negate
+
+  -- | Unary absolute value for Flow
+  fAbs :: (Num a, t1~t2, t1~t3) => Flow t1 a -> Flow t3 a
+  fAbs = appNumFlow abs
+
+  -- | Unary signum for Flow
+  fSig :: (Num a, t1~t2, t1~t3) => Flow t1 a -> Flow t3 a
+  fSig = appNumFlow signum
+
+instance FlowNum High High High
+instance FlowNum High Low High
+instance FlowNum Low High High
+instance FlowNum Low Low Low
+
+calcNumFlow :: Num a => (a -> a -> a)
+                     -> Flow t1 a
+                     -> Flow t2 a
+                     -> Flow t3 a
+calcNumFlow op (Flow ioa1) (Flow ioa2) = Flow $ do
+  a1 <- ioa1
+  a2 <- ioa2
+  return $ op a1 a2
+
+appNumFlow :: Num a => (a -> a) -> Flow t1 a -> Flow t1 a
+appNumFlow f (Flow ioa) = Flow $ do
+  a <- ioa
+  return $ f a
+\end{lstlisting}

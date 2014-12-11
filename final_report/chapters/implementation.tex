@@ -7,30 +7,56 @@ Currently, the library has a representation of all the standard operations withi
   \item Num
   \item Frac
   \item Bool
-  \item Eq and Ord
+  \item Eq
+  \item Ord
 \end{itemize}
 
 The Monad, Functor and Applicative instances for the High and Low Flow can be seen in Appendix~\ref{app:instances} and and example of how the standard operations for the Num type in Haskell can be found in Appendix~\ref{app:num_type}.
 \subsection{The Flow type}
 \label{sec:flow}
 The Flow type is defined as a newtype in Haskell, i.e. a definition that can only contain one constructor. The Flow type became
-\begin{lstlisting}[language=Haskell, xleftmargin=.2\textwidth, xrightmargin=.2\textwidth]
-newtype Flow tag a = Flow (IO a)
-\end{lstlisting}
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    newtype Flow tag a = Flow (IO a)
+  \end{lstlisting}
+\end{center}
 and even though it has a tag in the definition (the left hand side), it does not contain a tag on the right hand side. Instead, the tag is implemented as a phantom type\cite{haskell_phantom} which means that it can be checked by the type checker but not looked at by the user via e.g. pattern-matching. This means that from a user standpoint, the Flow type is simply a container for IO actions and the rules for the information flow control rules are implemented in the type checker alone. An example of how to add five to a Flow of High value is
-\begin{lstlisting}[language=Haskell]
-addFiveFlow :: Flow High Int -> Flow High Int
-addFiveFlow f = do
-  let b = mkHigh 5
-  f .+. b
-\end{lstlisting}
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    addFiveFlow :: Flow High Int -> Flow High Int
+    addFiveFlow f = do
+      let b = mkHigh 5
+      f .+. b
+  \end{lstlisting}
+\end{center}
 where a new Flow (the variable \emph{b}) is created and added with the given Flow \emph{f}.
+
 \subsubsection{Monad instance}
 Two separate monad instances was created in order to be able to handle potential code generation towards Haste, one for High and one for Low flow. If Haste was the compiler, then the High flow needed to be compiled with a call to the \emph{upg} function in JSFlow.
+
 \subsubsection{Functor instance}
 
 \subsubsection{Applicative instance}
 apofkapfokaspfok
+
+\subsection{Controlling the flow}
+Even though there are only two types of tags for the flow, they need to be thoroughly controlled. It is possible to use type variables when creating a class instance in Haskell. In the case for the class \emph{FlowBool}, i.e. a class that contains all operations for the Haskell type Bool wrapped in the Flow type, it is created as
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    class FlowBool t1 t2 t3 | t1 t2 -> t3 where
+      -- Function implementations of boolean operators
+  \end{lstlisting}
+\end{center}
+where t1, t2 and t3 are type variables. As can be seen, given two tags, t1 and t2, it is possible to derive the resulting tag t3. In order for Haskell to know how the different type variables relate to eachother, instance definitions must be added:
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    instance FlowBool High High High
+    instance FlowBool High Low High
+    instance FlowBool Low High High
+    instance FlowBool Low Low Low
+  \end{lstlisting}
+\end{center}
+The instance definitions give the rules for the Haskell type system which types the type variables can have and how to derive the resulting type. As can be seen, the only way for a \emph{FlowBool} to produce something of low value is when the two type variables t1 and t2 are low. As soon as either t1 or t2 or both are high, the result will be high. This holds for all classes in the library.
 
 \subsection{Handling side effects}
 What should be allowed and how to do it?

@@ -1,5 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies, GADTs, CPP,
-    FlexibleInstances #-}
+    FlexibleInstances, FlexibleContexts #-}
 
 module Types where
 
@@ -234,3 +234,14 @@ maxMinFlow op (Flow ioa) (Flow iob) = Flow $ do
   a <- ioa
   b <- iob
   return $ op a b
+
+--------------------------------------------------------------------------------
+-- For printing, think lprint in JSFlow (not really dependent on context though)
+class (Monad (Flow t)) => Tag t where
+  tagRep :: Flow t String
+
+instance Tag High where
+  tagRep = return "_<H>"
+
+instance Tag Low where
+  tagRep = return "_<L>"

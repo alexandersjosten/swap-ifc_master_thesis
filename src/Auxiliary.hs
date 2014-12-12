@@ -1,6 +1,9 @@
+{-# Language CPP #-}
+
 module Auxiliary where
 
 import Types
+import CodeGen
 import Control.Exception
 
 -- | upgrade takes a Flow with Low level and upgrades it
@@ -25,3 +28,12 @@ runFlow (Flow ioa) = do
 
 runHigh :: Flow High () -> Flow Low ()
 runHigh (Flow ioa) = Flow ioa
+
+lprint :: (Show a, Tag t) => a -> Flow t ()
+#ifdef __HASTE__
+lprint = Flow . lprintHaste
+#else
+lprint s = do
+  tag <- tagRep
+  Flow . putStrLn $ show s ++ tag
+#endif

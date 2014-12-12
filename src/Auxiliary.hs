@@ -1,6 +1,7 @@
 module Auxiliary where
 
 import Types
+import Control.Exception
 
 -- | upgrade takes a Flow with Low level and upgrades it
 upgrade :: Flow Low a -> Flow High a
@@ -15,7 +16,12 @@ mkLow :: a -> Flow Low a
 mkLow = return
 
 runFlow :: Flow t () -> IO ()
-runFlow (Flow ioa) = ioa
+runFlow (Flow ioa) = do
+  res <- try ioa
+  case res of
+    Left err -> let e = err :: SomeException
+                in return ()
+    Right () -> return ()
 
 runHigh :: Flow High () -> Flow Low ()
 runHigh (Flow ioa) = Flow ioa

@@ -88,6 +88,7 @@ Within information-flow security, there are two types of flow that must be check
 \subsubsection{Explicit flow}
 With explicit flow, one means when a data in a \emph{high} context leaks information to a \emph{low} context explicitly. An example can be seen in Figure~\ref{fig:expflow} where the value of the high variable \emph{h} is leaked to the low variable \emph{l}. Obviously this should be illegal when information-flow security is applied and explicit flows are not difficult to find when dynamically checking the code. When data is written to a variable, one simply must keep track of the context of the variable and the context of the data. If the variable is in low context and the data is in high context an error should be produced and execution of the JavaScript code should be stopped. All other scenarios (high variable with high data, high variable with low data and low variable with low data) are allowed.
 \subsubsection{Implicit flow}
+\label{chapter:implicit_flow}
 Implicit flows are trickier to find.
 
 \begin{figure}[h]
@@ -131,3 +132,56 @@ When creating a web application in JavaScript that JSFlow should be able to chec
   \label{fig:upg}
 \end{figure}
 The upg function will take a computation (in Figure~\ref{fig:upg} the compuation is simply the number 42) and bind that value to the assigned variable (in Figure~\ref{fig:upg} the variable h) and put the variable in a high context.
+
+\subsubsection{Flows in a pure functional language}
+Even though there are two different flows in Javascript (implicit and explicit flows), there is only one type of flow in a pure functional programming language like Haskell, an explicit flow.\cite{non_interference} As described in \ref{chapter:implicit_flow}, an implicit flow depends on control structures in order to leak information. However, even though a pure functional programming language like Haskell contains control structures, they are still interpreted as a regular function. This means that a function like
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    f :: Int -> Int
+    f x = if x `mod` 2 == 0
+              then 42
+            else -42
+  \end{lstlisting}
+\end{center}
+will look like an implicit flow but is in fact an explicit flow. This is because an if-then-else can be rewritten as a regular function \cite{if-then-else}
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    myIf :: Bool -> a -> a -> a
+    myIf True  b1 _ = b1
+    myIf False _ b2 = b2
+  \end{lstlisting}
+\end{center}
+where b1 and b2 are the different branches. The different branches are of type \textbf{a}, which in this case can be any arbitrary expression. Rewriting the function \textbf{f} using \textbf{myIf} can be done as follows:
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    f :: Int -> Int
+    f x = myIf (x `mod` 2 == 0) 42 (-42)
+  \end{lstlisting}
+\end{center}
+
+\subsection{Non-Interference}
+Something about non-interference. Public outcomes does not depend on private input.
+
+Assume the following function where something of type \textbf{Char} is a high value and something of type \textbf{Int} is of low value:
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    fOk :: (Char, Int) -> (Char, Int)
+    fOk (c, i) = (chr (ord c + i), i + 42)
+  \end{lstlisting}
+\end{center}
+The function \textbf{f} does not leak any valuable information about the value \textbf{c} but rather preserves the confidentiality. The function \textbf{fOk} is \emph{non-interfered} since the public result (the Int value) is independent of the value of \textbf{c}. If the function was defined as
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    fBad1 :: (Char, Int) -> (Char, Int)
+    fBad1 (c, i) = (c, ord c)
+  \end{lstlisting}
+\end{center}
+it would not be non-interfered because the confidentiality is broken. Information about \textbf{c} is leaked through the low Int and the corresponding decimal value of the ASCII number of \textbf{c} is returned as the second value of the tuple.
+
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    fBad2 :: (Char, Int) -> (Char, Int)
+    fBad2 (c, i) = (c, if ord c > 31 then 1 else 0)
+  \end{lstlisting}
+\end{center}
+would give information about whether or not the variable \textbf{c} is a printable character (the ASCII values of printable characters start at 32\cite{ascii}).

@@ -59,6 +59,26 @@ where t1, t2 and t3 are type variables. As can be seen, given two tags, t1 and t
 The instance definitions give the rules for the Haskell type system which types the type variables can have and how to derive the resulting type. As can be seen, the only way for a \emph{FlowBool} to produce something of low value is when the two type variables t1 and t2 are low. As soon as either t1 or t2 or both are high, the result will be high. This holds for all classes in the library.
 
 \subsection{Handling side effects}
+Handling side effects in any language is a challenge from a security point of view. Potential shared states can be altered, data can be printed or exceptions could be thrown indicating an error has occurred. From the viewpoint of information flow control, all of these side effects must be monitored closely.
+
+\subsubsection{JSFlow and side effects}
+
+\subsubsection{Side effects in the library}
+The function that will handle the side effects has the following implementation:
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    runFlow :: Flow t () -> IO ()
+    runFlow (Flow ioa) = do
+      res <- try ioa
+      case res of
+        Left err -> let e = err :: SomeException
+                    in return ()
+        Right () -> return ()
+  \end{lstlisting}
+\end{center}
+As can be seen, the implementation uses Haskell's Unit-type.
+
+Mention unit type - Correlates to void in e.g. Java.
 What should be allowed and how to do it?
 Stricter compared to JSFlow?
 What can JSFlow do?

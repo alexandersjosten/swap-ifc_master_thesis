@@ -85,4 +85,21 @@ What can JSFlow do?
 Check out side effects in LIO.
 
 \subsection{Incorporating with Haste}
-How to do this?
+In order to incorporate the library with Haste, a communication between the library and Haste had to be created. This was done by using a preprocessing directive, the same preprocessing directive that Haste will set if the compilation process is done with Haste. The key difference for how the library should behave between GHC and Haste is the \emph{return} of the high flow within the Monad instance. The main difference is highlighted in the following code snippet:
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    #ifdef __HASTE__
+      return = Flow . upg
+    #else
+      return = Flow . return
+    #endif
+  \end{lstlisting}
+\end{center}
+If the program is compiled with Haste, then the computation given to return will be executed within the function upg
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    upg :: a -> IO a
+    upg = fmap fromOpaque . ffi "upg" . toOpaque
+  \end{lstlisting}
+\end{center}
+which makes a FFI (Foreign Function Interface) call in order to wrap the compiled JavaScript code with a call to the JSFlow function upg. It is made opaque in order to avoid any optimizations from the compiler. This process does not have to be done with a low flow type since it should be executed as normal code by JSFlow. The full implementation of the Monad instance can be seen in Appendix~\ref{app:instances}.

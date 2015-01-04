@@ -134,7 +134,7 @@ When creating a web application in JavaScript that JSFlow should be able to chec
 The upg function will take a computation (in Figure~\ref{fig:upg} the compuation is simply the number 42) and bind that value to the assigned variable (in Figure~\ref{fig:upg} the variable h) and put the variable in a high context.
 
 \subsubsection{Flows in a pure functional language}
-Even though there are two different flows in Javascript (implicit and explicit flows), there is only one type of flow in a pure functional programming language like Haskell, an explicit flow.\cite{non_interference} As described in \ref{chapter:implicit_flow}, an implicit flow depends on control structures in order to leak information. However, even though a pure functional programming language like Haskell contains control structures, they are still interpreted as a regular function. This means that a function like
+Even though there are two different flows in Javascript (implicit and explicit flows), there is only one type of flow in a pure functional programming language like Haskell, an explicit flow.\cite{seclib} As described in \ref{chapter:implicit_flow}, an implicit flow depends on control structures in order to leak information. However, even though a pure functional programming language like Haskell contains control structures, they are still interpreted as a regular function. This means that a function like
 \begin{center}
   \begin{lstlisting}[language=Haskell]
     f :: Int -> Int

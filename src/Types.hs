@@ -1,5 +1,5 @@
 {-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies, GADTs, CPP,
-    FlexibleInstances, FlexibleContexts #-}
+    FlexibleInstances, FlexibleContexts, TypeFamilies #-}
 
 module Types where
 
@@ -245,3 +245,17 @@ instance Tag High where
 
 instance Tag Low where
   tagRep = return "_<L>"
+
+--------------------------------------------------------------------------------
+-- Used for type contstraints in e.g. run
+class ValidFlow t1 t2 where
+  type Result t1 t2
+
+instance ValidFlow Low High where
+  type Result Low High = High
+instance ValidFlow High High where
+  type Result High High = High
+instance ValidFlow Low Low where
+  type Result Low Low = Low
+
+--------------------------------------------------------------------------------

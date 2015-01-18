@@ -36,7 +36,7 @@ instance Monad (Flow High) where
 -- Functor
 instance Functor (Flow High) where
   -- fmap :: (a -> b) -> f a -> f b
-  fmap f (Flow ioa) = Flow $ ioa >>= return . f
+  fmap f ioa = ioa >>= return . f
 
 -- Applicative
 instance Applicative (Flow High) where
@@ -184,7 +184,7 @@ logicBoolFlow op (Flow io1) (Flow io2) = Flow $ do
 --------------------------------------------------------------------------------
 
 -- Eq instance for Flow
-infix 4 .==., ./=., .<., .<=., .>., .>=.
+infixl 4 .==., ./=., .<., .<=., .>., .>=.
 class FlowEqOrd t1 t2 t3 | t1 t2 -> t3 where
   -- | Binary equals for Flow
   (.==.) :: Eq a => Flow t1 a -> Flow t2 a -> Flow t3 Bool

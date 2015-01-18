@@ -9,3 +9,6 @@ upg = fmap fromOpaque . ffi "upg" . toOpaque
 
 lprintHaste :: Show a => a -> IO ()
 lprintHaste = ffi "lprint" . show
+
+declassify :: IO a -> IO a
+declassify = fmap fromOpaque . ffi "declassify" . toOpaque

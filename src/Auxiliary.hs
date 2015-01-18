@@ -41,5 +41,10 @@ lprint s = do
 run :: ValidFlow t t' => Flow t a -> Flow t' a
 run = undefined
 
-declassify :: ValidFlow l l' => Flow l' a -> Flow l a
-declassify = undefined
+--declassify :: ValidFlow l l' => Flow l' a -> Flow l a
+declassify :: Flow High a -> Flow Low a
+#ifdef __HASTE__
+declassify (Flow ioa) = Flow $ CodeGen.declassify ioa
+#else
+declassify (Flow ioa) = Flow ioa
+#endif

@@ -37,3 +37,9 @@ lprint s = do
   tag <- tagRep
   Flow . putStrLn $ show s ++ tag
 #endif
+
+run :: ValidFlow t t' => Flow t a -> Flow t' a
+run = undefined
+
+declassify :: ValidFlow l l' => Flow l' a -> Flow l a
+declassify = undefined

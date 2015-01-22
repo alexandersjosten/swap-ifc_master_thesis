@@ -1,5 +1,5 @@
 all:
-	hastec Main.hs
+	hastec Main.hs --onexec --debug --opt-whole-program
 clean:
 	rm -f *.{hi,o,js}
 	rm -rf main/

@@ -1,9 +1,9 @@
 {-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies, GADTs, CPP,
     FlexibleInstances, FlexibleContexts, TypeFamilies #-}
 
-module Types where
+module SwapIFC.Types where
 
-import CodeGen
+import SwapIFC.Haste.CodeGen
 import Control.Applicative
 import Control.Monad
 
@@ -257,5 +257,19 @@ instance ValidFlow High High where
   type Result High High = High
 instance ValidFlow Low Low where
   type Result Low Low = Low
+
+--------------------------------------------------------------------------------
+-- Used for type contstraints in e.g. run
+class CombineFlow t1 t2 where
+  type CombineResult t1 t2
+
+instance CombineFlow Low High where
+  type CombineResult Low High = High
+instance CombineFlow High High where
+  type CombineResult High High = High
+instance CombineFlow Low Low where
+  type CombineResult Low Low = Low
+instance CombineFlow High Low where
+  type CombineResult High Low = High
 
 --------------------------------------------------------------------------------

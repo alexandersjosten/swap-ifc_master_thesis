@@ -1,9 +1,9 @@
 {-# Language CPP #-}
 
-module Auxiliary where
+module SwapIFC.Auxiliary where
 
-import Types
-import CodeGen
+import SwapIFC.Types
+import SwapIFC.Haste.CodeGen
 import Control.Exception
 
 -- | upgrade takes a Flow with Low level and upgrades it
@@ -29,11 +29,14 @@ runFlow (Flow ioa) = do
 runHigh :: Flow High () -> Flow Low ()
 runHigh (Flow ioa) = Flow ioa
 
-lprint :: (Show a, Tag t) => a -> Flow t ()
+lprint :: (Show a, Tag t) => Flow t a -> Flow t ()
 #ifdef __HASTE__
-lprint = Flow . lprintHaste
+lprint flow = do
+  a <- flow
+  Flow $ lprintHaste a
 #else
-lprint s = do
+lprint flow = do
+  s <- flow
   tag <- tagRep
   Flow . putStrLn $ show s ++ tag
 #endif

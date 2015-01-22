@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module CodeGen where
+module SwapIFC.Haste.CodeGen where
 
 import Haste.Foreign
 

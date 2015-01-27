@@ -107,6 +107,18 @@ genOrdOp = oneof [ return Less
                  , return Min
                  ]
 
+data Tag
+  = High
+  | Low
+
+instance Arbitrary Tag where
+  arbitrary = genTag
+
+genTag :: Gen Tag
+genTag = oneof [ return High
+               , return Low
+               ]
+
 genFlowNumExpr :: (Num a) => Gen (Flow t a)
 genFlowNumExpr = undefined
 

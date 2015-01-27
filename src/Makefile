@@ -1,5 +1,7 @@
 all:
 	hastec Main.hs --onexec --debug --opt-whole-program --output-jsflow
 clean:
-	rm -f *.{hi,o,js}
+	find . -iname '*.hi' -exec rm \{\} \;
+	find . -iname '*.o' -exec rm \{\} \;
+	find . -iname '*.js' -exec rm \{\} \;
 	rm -rf main/

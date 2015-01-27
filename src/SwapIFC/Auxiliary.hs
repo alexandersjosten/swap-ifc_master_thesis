@@ -47,7 +47,7 @@ run = undefined
 --declassify :: ValidFlow l l' => Flow l' a -> Flow l a
 declassify :: Flow High a -> Flow Low a
 #ifdef __HASTE__
-declassify (Flow ioa) = Flow $ CodeGen.declassify ioa
+declassify (Flow ioa) = Flow $ declassifyHaste ioa
 #else
 declassify (Flow ioa) = Flow ioa
 #endif

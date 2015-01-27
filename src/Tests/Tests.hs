@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Tests.Tests where
 
 import Test.QuickCheck
@@ -119,20 +121,46 @@ genTag = oneof [ return High
                , return Low
                ]
 
-genFlowNumExpr :: (Num a) => Gen (Flow t a)
-genFlowNumExpr = undefined
 
-genFlowFracExpr :: (Fractional a) => Gen (Flow t a)
-genFlowFracExpr = undefined
+genFlowNumExpr :: Gen (Either (Flow High Int) (Flow Low Int))
+genFlowNumExpr = do
+  i <- arbitrary
+  t <- arbitrary
+  case t of
+    High -> return $ Left (mkHigh i)
+    Low  -> return $ Right (mkLow i)
 
-genFlowBoolExpr :: Gen (Flow t Bool)
-genFlowBoolExpr = undefined
+genFlowFracExpr :: Gen (Either (Flow High Double) (Flow Low Double))
+genFlowFracExpr = do
+  d <- arbitrary
+  t <- arbitrary
+  case t of
+    High -> return $ Left (mkHigh d)
+    Low  -> return $ Right (mkLow d)
 
-genFlowEqExpr :: (Eq a) => Gen (Flow t a)
-genFlowEqExpr = undefined
+genFlowBoolExpr :: Gen (Either (Flow High Bool) (Flow Low Bool))
+genFlowBoolExpr = do
+  b <- arbitrary
+  t <- arbitrary
+  case t of
+    High -> return $ Left (mkHigh b)
+    Low  -> return $ Right (mkLow b)
 
-genFlowOrdExpr :: (Ord a) => Gen (Flow t a)
-genFlowOrdExpr = undefined
+genFlowEqExpr :: Gen (Either (Flow High Bool) (Flow Low Bool))
+genFlowEqExpr = do
+  b <- arbitrary
+  t <- arbitrary
+  case t of
+    High -> return $ Left (mkHigh b)
+    Low  -> return $ Right (mkLow b)
+
+genFlowOrdExpr :: Gen (Either (Flow High Int) (Flow Low Int))
+genFlowOrdExpr = do
+  i <- arbitrary
+  t <- arbitrary
+  case t of
+    High -> return $ Left (mkHigh i)
+    Low  -> return $ Right (mkLow i)
 
 ------------------------------------------------------------------------------
 -------------------------------- Test Program --------------------------------

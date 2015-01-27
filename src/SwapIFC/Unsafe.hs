@@ -12,3 +12,6 @@ unsafeShow flow = unsafePerformIO $ unwrap $ do
 
 unwrap :: Flow t a -> IO a
 unwrap (Flow ioa) = ioa
+
+changeTag :: Flow t1 a -> Flow t2 a
+changeTag (Flow ioa) = Flow ioa

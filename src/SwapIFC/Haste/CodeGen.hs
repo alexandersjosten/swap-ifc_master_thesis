@@ -8,7 +8,13 @@ upg :: a -> IO a
 upg = fmap fromOpaque . ffi "upg" . toOpaque
 
 lprintHaste :: Show a => a -> IO ()
-lprintHaste = ffi "lprint" . show
+lprintHaste = p . show
+  where
+    {-# NOINLINE p #-}
+    p :: String -> IO ()
+    p = ffi "lprint"
 
 declassifyHaste :: IO a -> IO a
-declassifyHaste = fmap fromOpaque . ffi "declassify" . toOpaque
+declassifyHaste ioa = do
+  a <- ioa
+  fmap fromOpaque $ ffi "declassify" $ toOpaque a

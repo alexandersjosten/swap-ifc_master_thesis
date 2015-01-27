@@ -26,9 +26,6 @@ runFlow (Flow ioa) = do
                 in return ()
     Right () -> return ()
 
-runHigh :: Flow High () -> Flow Low ()
-runHigh (Flow ioa) = Flow ioa
-
 lprint :: (Show a, Tag t) => Flow t a -> Flow t ()
 #ifdef __HASTE__
 lprint flow = do
@@ -41,10 +38,6 @@ lprint flow = do
   Flow . putStrLn $ show s ++ tag
 #endif
 
-run :: ValidFlow t t' => Flow t a -> Flow t' a
-run = undefined
-
---declassify :: ValidFlow l l' => Flow l' a -> Flow l a
 declassify :: Flow High a -> Flow Low a
 #ifdef __HASTE__
 declassify (Flow ioa) = Flow $ declassifyHaste ioa

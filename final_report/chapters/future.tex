@@ -1,1 +1,22 @@
 \section{Future work}
+No matter how satisfied one is, there is always more work that can be done. In this section, five different suggestions for how to proceed in the future will be presented. The suggestions are not only about how to make the library SwapIFC better, but also other potential work within the area of information flow control.
+
+\subsection{Full communication for SwapIFC to JSFlow}
+
+\subsection{More primitives for the library}
+A library for a language is never completed until it easily supports the entire language. For SwapIFC, an easy yet time consuming extension would be to add classes and primitives for more standard classes of Haskell. Adding support for handling strings and lists within the Flow monad is a easy next step to do. However, adding a class for every standard Haskell class would be tedious, so looking more on if it is possible to have a more general class within the Flow monad and easily lift values into it could also be a good next step.
+
+As of now, if a programmer want to use primitives for lists within a Flow instance he or she must write the entire function him/herself. This is something one should be able to assume that a library should handle. As of right now, it can be handled using Applicative. A very simple example of adding the primitive (++), which given two lists concatenates them, is
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    flowConcat :: Applicative f => f [a] -> f [a] -> f [a]
+    flowConcat f1 f2 = (++) <$> f1 <*> f2
+  \end{lstlisting}
+\end{center}
+However, it has a major drawback. Since it uses Applicative and there are two different Applicative implementations (one for High and one for Low), both flows (f1 and f2) must have the same tag. So as of right now, a programmer who uses SwapIFC must either implemement the missing primitives hiim/herself or accept that all operands must be of the same type (in this case the same tag).
+
+\subsection{Add support for Haste.App}
+
+\subsection{More features for JSFlow}
+
+\subsection{End-to-End information flow control}

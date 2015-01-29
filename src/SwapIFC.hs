@@ -17,6 +17,8 @@ module SwapIFC (
     -- Stuff from SwapIFC.Unsafe
   , unsafeShow
   , unwrap
+  , unwrapValue
+  , changeTag
   ) where
 
 import SwapIFC.Types

@@ -34,10 +34,23 @@ where a new Flow (the variable \emph{b}) is created and added with the given Flo
 \subsubsection{Monad instance}
 Two separate monad instances was created in order to be able to handle potential code generation towards Haste, one for High and one for Low flow. If Haste was the compiler, then the High flow needed to be compiled with a call to the \emph{upg} function in JSFlow.
 
+Every Monad created in Haskell must also be a Functor and an Applicative by the Functor-Applicative-Monad proposal\cite{functor_applicative_monad}. Starting from GHC 7.10, every Monad that is not a Functor or Applicative will generate a compile error. Due to the Functor-Applicative-Monad proposal, the created Monad for the Flow type is a Functor and an Applicative as well.
+
 \subsubsection{Functor instance}
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    fmap f ioa = ioa >>= return . f
+  \end{lstlisting}
+\end{center}
 
 \subsubsection{Applicative instance}
-apofkapfokaspfok
+The Applicative instance is implemented simply by using primitives from the Monad class by having
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    pure  = return
+    (<*>) = ap
+  \end{lstlisting}
+\end{center}
 
 \subsection{Controlling the flow}
 Even though there are only two types of tags for the flow, they need to be thoroughly controlled. It is possible to use type variables when creating a class instance in Haskell. In the case for the class \emph{FlowBool}, i.e. a class that contains all operations for the Haskell type Bool wrapped in the Flow type, it is created as
@@ -103,3 +116,5 @@ If the program is compiled with Haste, then the computation given to return will
   \end{lstlisting}
 \end{center}
 which makes a FFI (Foreign Function Interface) call in order to wrap the compiled JavaScript code with a call to the JSFlow function upg. It is made opaque in order to avoid any optimizations from the compiler. This process does not have to be done with a low flow type since it should be executed as normal code by JSFlow. The full implementation of the Monad instance can be seen in Appendix~\ref{app:instances}.
+\subsubsection{Modifications done to Haste}
+Since JSFlow only supports ECMA-262 v5 in non-strict mode and does not support JSON~\cite{jsflow}, some modifications to Haste were needed in order to produce Javascript source code which followed the ECMA-262 v5 standard~\cite{ecma262v5}. The code generation of Haste needed to be altered in order to not produce code for the JSON library and ECMA features that are introduced in ECMA-262 v6. Haste allows for ArrayBuffers to be produced, but since the concept of ArrayBuffer is in draft mode for ECMA-262 v6~\cite{js_arraybuffer, ecma_arraybuffer} they can not be supported by the current version of JSFlow. However, since crippling every user of Haste by removing features is not a good idea, a flag was added in case a user wants to compile towards JSFlow. This means that Haste will produce Javascript source code with features that are introduced in ECMA-262 v6 unless the user tells the compiler to produce source code that can be dynamically checked by JSFlow.

@@ -1,8 +1,8 @@
 \section{Related work}
 \label{chapter:related}
-There have been research within Information-Flow Control and libraries have been created in order to help enforce information flow policies and secur both confidentiality and integrity of the information. Some of the most influencial for this project will be described below.
+There have been research within Information-Flow Control and libraries have been created in order to help enforce information flow policies and secure both confidentiality and integrity of the information. Some of the most influencial findings for this project will be described below.
 \subsection{LIO}
-LIO (Labeled IO) is a library created in Haskell for dynamic information flow control.\cite{lio-2011} 
+LIO (Labeled IO) is a library created in Haskell for dynamic information flow control~\cite{lio-2011}.
 \subsection{Seclib}
-Seclib is a light-weight library for information flow control in Haskell.\cite{seclib, seclib_git} Just as with the library created in this thesis, Seclib is based on monads and all private data lives within the created monad. However, compared to the library in this thesis, Seclib creates two different monads, \textbf{Sec} and \textbf{SecIO}.
+Seclib is a light-weight library for information flow control in Haskell~\cite{seclib, seclib_git}. Just as with the library created in this thesis, Seclib is based on monads and all private data lives within the created monad. However, compared to the library in this thesis, Seclib creates two different monads, \textbf{Sec} and \textbf{SecIO}, where SecIO is an extended IO monad (an IO monad wrapped around a Sec monad). Seclib was designed to be a small, lightweight library and consists, as of Jan. 29 2015, 342 lines of code.
 \subsection{SeLINQ}

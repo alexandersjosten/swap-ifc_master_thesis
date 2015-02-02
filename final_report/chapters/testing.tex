@@ -1,1 +1,56 @@
 \section{Testing of the implementation}
+The testing part of the project was done in two different ways. First, randomized tests of SwapIFC were done using QuickCheck~\cite{quickcheck, quickcheck-wiki}. Randomized testing is an area where a lot of research has been made.
+\subsection{Testing of the library with QuickCheck}
+In order to test SwapIFC with QuickCheck, every Flow instance and every operator needed to be modeled as a constructor of a datatype. This is to help randomize both the instance class and the operator. The probability distribution for each class is the same and given a class, the probability distribution for each operation is the same. The general algorithm for the tests can be seen in Figure~\ref{fig:testing}. Note that the \emph{oneof} function and the \emph{generateXFlows} functions are random functions and the \emph{validate} will return true if and only if the result of the operand \emph{op} applied to the flows in \emph{flows} will generate the same value as the normal operand corresponding to \emph{op} applied to the normal values corresponding to \emph{flows} and that the tag is being preserved. The preservation of the tag means that if any of the operands have a High tag, then the result must be High. An example of this is the following:
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    let a = mkHigh 42
+    let b = mkLow 10
+    let c = a .+. b
+    return (tag of c == High && value of c == 42 + 10)
+
+    let a = mkLow 42
+    let b = mkLow 10
+    let c = a .<. b
+    return (tag of c == Low && value of c == 42 < 10)
+  \end{lstlisting}
+\end{center}
+The algorithm is repeated 10000 times and the source code can be found in Appendix~\ref{app:tests}.
+
+\begin{figure}[h]
+  \begin{algorithm}[H]
+    \caption{Pseudo code for testing algorithm}
+    \begin{algorithmic}
+      \State $c\gets oneof([Num, Frac, Bool, Eq, Ord])$
+      \If {$c == Num$}
+          \State $op\gets oneof([Add, Sub, Mul, Neg, Abs, Sig])$
+          \State $flows\gets generateNumFlows$
+      \EndIf        
+      \If {$c == Frac$}
+          \State $op\gets oneof([Div, Recip, FromRational])$
+          \State $flows\gets generateFracFlows$
+      \EndIf
+      \If {$c == Bool$}
+          \State $op\gets oneof([And, Or, Not])$
+          \State $flows\gets generateBoolFlows$
+      \EndIf
+      \If {$c == Eq$}
+          \State $op\gets oneof([Equals, NotEquals])$
+          \State $flows\gets generateEqFlows$
+      \EndIf
+      \If {$c == Ord$}
+          \State $op\gets oneof([Less, GreaterEquals, LessEquals, Greater, Max, Min])$
+          \State $flows\gets generateOrdFlows$
+      \EndIf
+      \State
+      \State
+      \Return Validate flows op
+    \end{algorithmic}
+  \end{algorithm}
+  \caption{Pseudo code for the testing algorithm}
+  \label{fig:testing}
+\end{figure}
+
+\subsection{Testing of the code generation}
+
+\subsection{Argument for correctness of the library}

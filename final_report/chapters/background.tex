@@ -185,3 +185,15 @@ it would not be non-interfered because the confidentiality is broken. Informatio
   \end{lstlisting}
 \end{center}
 would give information about whether or not the variable \textbf{c} is a printable character (the ASCII values of printable characters start at 32\cite{ascii}).\cite{seclib}
+
+\subsection{Related Work}
+\label{chapter:related}
+There have been research within Information-Flow Control and libraries have been created in order to help enforce information flow policies and secure both confidentiality and integrity of the information. Some of the most influencial findings for this project will be described below.
+\subsubsection{LIO}
+LIO (Labeled IO) is a library created in Haskell for dynamic information flow control~\cite{lio-2011}.
+\subsubsection{Seclib}
+Seclib is a light-weight library for information flow control in Haskell~\cite{seclib, seclib_git}. Just as with the library created in this thesis, Seclib is based on monads and all private data lives within the created monad. However, compared to the library in this thesis, Seclib creates two different monads, \textbf{Sec} and \textbf{SecIO}, where SecIO is an extended IO monad (an IO monad wrapped around a Sec monad). Seclib was designed to be a small, lightweight library and consists, as of Jan. 29 2015, 342 lines of code.
+\subsubsection{SeLINQ}
+
+\subsubsection{Why another library?}
+As has been explained in Chapter~\ref{chapter:related}, there are already working libraries for information flow control so why would another library be needed? Even though the current libraries are good, they lack one part - integration with another system. The library created for this thesis is supposed to close the gap between a static control for information flow control and already created tools for dynamic check of information flow control (JSFlow) and created tools for securing Javascript from the viewpoint of a type system. The created library will be able to be run in GHC if one wants to create a system strictly for Haskell but it should also be able to run the code with Haste and as a result get produced Javascript code which is tagged so JSFlow can dynamically track the information flow.

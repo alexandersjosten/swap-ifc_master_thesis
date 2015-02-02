@@ -20,7 +20,7 @@ The Flow type is defined as a newtype in Haskell, i.e. a definition that can onl
     newtype Flow tag a = Flow (IO a)
   \end{lstlisting}
 \end{center}
-and even though it has a tag in the definition (the left hand side), it does not contain a tag on the right hand side. Instead, the tag is implemented as a phantom type\cite{haskell_phantom} which means that it can be checked by the type checker but not looked at by the user via e.g. pattern-matching. This means that from a user standpoint, the Flow type is simply a container for IO actions and the rules for the information flow control rules are implemented in the type checker alone. An example of how to add five to a Flow of High value is
+and even though it has a tag in the definition (the left hand side), it does not contain a tag on the right hand side. Instead, the tag is implemented as a phantom type~\cite{haskell_phantom} which means that it can be checked by the type checker but not looked at by the user via e.g. pattern-matching. This means that from a user standpoint, the Flow type is simply a container for IO actions and the rules for the information flow control rules are implemented in the type checker alone. An example of how to add five to a Flow of High value is
 \begin{center}
   \begin{lstlisting}[language=Haskell]
     addFiveFlow :: Flow High Int -> Flow High Int
@@ -34,7 +34,7 @@ where a new Flow (the variable \emph{b}) is created and added with the given Flo
 \subsection{Monad instance}
 Two separate monad instances was created in order to be able to handle potential code generation towards Haste, one for High and one for Low flow. If Haste was the compiler, then the High flow needed to be compiled with a call to the \emph{upg} function in JSFlow.
 
-Every Monad created in Haskell must also be a Functor and an Applicative by the Functor-Applicative-Monad proposal\cite{functor_applicative_monad}. Starting from GHC 7.10, every Monad that is not a Functor or Applicative will generate a compile error. Due to the Functor-Applicative-Monad proposal, the created Monad for the Flow type is a Functor and an Applicative as well.
+Every Monad created in Haskell must also be a Functor and an Applicative by the Functor-Applicative-Monad proposal~\cite{functor_applicative_monad}. Starting from GHC 7.10, every Monad that is not a Functor or Applicative will generate a compile error. Due to the Functor-Applicative-Monad proposal, the created Monad for the Flow type is a Functor and an Applicative as well.
 
 \subsection{Functor instance}
 \begin{center}

@@ -1,9 +1,9 @@
 \chapter{Background}
-As mentioned in Chapter~\ref{chapter:intro}, JavaScript has several shortcommings. Two of the tools that will be used in this project are Haste\cite{haste-lang} and JSFlow\cite{jsflow,jsflow-csf12,jsflow-sac14}.
+As mentioned in Chapter~\ref{chapter:intro}, JavaScript has several shortcommings. Two of the tools that will be used in this project are Haste~\cite{haste-lang} and JSFlow~\cite{jsflow,jsflow-csf12,jsflow-sac14}.
 \section{Problems with JavaScript - part deux}
 As mentioned in Chapter~\ref{chapter:intro}, from a security standpoint JavaScript suffers from weak dynamic typing and having access to sensitive information in the browser.
 \subsection{Weak dynamic typing}
-There are several odd features one can use in JavaScript due to the weak dynamic typing. Where a statically typed language (e.g. Java) would give a compile error, the JavaScript code will be run and perhaps succeed but with unexpected results. Figure~\ref{fig:error_java} shows a logical error that is caught at compile time in Java. If the code in Figure~\ref{fig:error_java} would be allowed to run, it would be up to the runtime environment to determine how the code would be interpreted. The same error in JavaScript i shown in Figure \ref{fig:error_js}. Since JavaScript does not have any static type checking the decision on how to interpret the code will be made at runtime. Instead of failing and raising a runtime error, JavaScript will convert the \textbf{true} value into a number which in this case corresponds to the number \textbf{1}. Hence the addition will be evaluated to \textbf{3}. Situatuations like that, where a clear type error is allowed to propagate and potentially change the state of the application should be considered dangerous and prone to producing bugs.
+There are several odd features one can use in JavaScript due to the weak dynamic typing. Where a statically typed language (e.g. Java) would give a compile error, the JavaScript code will be run and perhaps succeed but with unexpected results. Figure~\ref{fig:error_java} shows a logical error that is caught at compile time in Java. If the code in Figure~\ref{fig:error_java} would be allowed to run, it would be up to the runtime environment to determine how the code would be interpreted. The same error in JavaScript i shown in Figure~\ref{fig:error_js}. Since JavaScript does not have any static type checking the decision on how to interpret the code will be made at runtime. Instead of failing and raising a runtime error, JavaScript will convert the \textbf{true} value into a number which in this case corresponds to the number \textbf{1}. Hence the addition will be evaluated to \textbf{3}. Situatuations like that, where a clear type error is allowed to propagate and potentially change the state of the application should be considered dangerous and prone to producing bugs.
 
 Another issue with the weak type system in JavaScript can be seen in Figure~\ref{fig:js_comparison}. It is perfectly legal to compare a function with an array in JavaScript. The code in Figure~\ref{fig:js_comparison} will evaluate to \textbf{true}. This can in turn make it very difficult to find potential bugs since JavaScript will try and convert values of different types to the same types and then make the comparison. In e.g. Java, the comparison in Figure~\ref{fig:js_comparison} would not go through the type checker.
 \begin{figure}[h]
@@ -43,19 +43,19 @@ The browser has access to several different types of sensitive information and c
 \subsection{Examples of attempts to solutions}
 There have been several attempts of providing a more secure type system to JavaScript, everything from creating a statically typed language that compiles to JavaScript to a compiler from an already existing programming language and compile it to JavaScript to a static type checker. Examples of attempted soultions are
 \begin{itemize}
-  \item \textbf{TypeScript}\cite{typescript}, a typed superset of JavaScript that compiles to plain JavaScript.
-  \item \textbf{TeJaS}\cite{tejas-art,tejas-git}, which allows you to annotate type signatures as comments in the JavaScript code and then type checks the code.
-  \item \textbf{GHCJS}\cite{ghcjs} and \textbf{Haste}\cite{haste-lang,haste-symposium}, which compiles from Haskell, a statically typed, high-level functional programming language\cite{haskell}, to JavaScript.
+  \item \textbf{TypeScript}~\cite{typescript}, a typed superset of JavaScript that compiles to plain JavaScript.
+  \item \textbf{TeJaS}~\cite{tejas-art,tejas-git}, which allows you to annotate type signatures as comments in the JavaScript code and then type checks the code.
+  \item \textbf{GHCJS}~\cite{ghcjs} and \textbf{Haste}~\cite{haste-lang,haste-symposium}, which compiles from Haskell, a statically typed, high-level functional programming language~\cite{haskell}, to JavaScript.
 \end{itemize}
 
 When looking at the other major flaw, namely that JavaScript has access to sensitive information that is stored within the browser, the current solution as of now is to sandbox the script and run it in a secure environment. There are mainly three ways of doing this.
 \begin{itemize}
   \item Wrap the script inside a call to with and pass a faked window object and execute the code with eval.
-  \item Use an iframe and set the sandbox attribute to either not allow scripts to run or have it be run within that iframe only. Unfortunately, as explained in \cite{js_in_js}, iframes have some issues as well.
+  \item Use an iframe and set the sandbox attribute to either not allow scripts to run or have it be run within that iframe only. Unfortunately, as explained in~\cite{js_in_js}, iframes have some issues as well.
   \item Use existing tools to help sandbox third party code, such as:
     \begin{itemize}
-      \item \textbf{JavaScript in JavaScript}\cite{js_in_js}, an interpreter that allows an application to execute third-party scripts in a completely isolated, sandboxed environment.
-      \item \textbf{Caja}\cite{caja_spec}, a compiler to make third party code safe to embed within a website.
+      \item \textbf{JavaScript in JavaScript}~\cite{js_in_js}, an interpreter that allows an application to execute third-party scripts in a completely isolated, sandboxed environment.
+      \item \textbf{Caja}~\cite{caja_spec}, a compiler to make third party code safe to embed within a website.
     \end{itemize}
 \end{itemize}
 \section{Haste}
@@ -79,7 +79,7 @@ Haste (HaSkell To Ecmascript compiler) is a compiler that compiles the high-leve
   \label{fig:system}
 \end{figure}
 
-When compiling the Haskell source code with Haste, the compilation process will result in one binary file for the server and source code in JavaScript for the client.\cite{haste-symposium}
+When compiling the Haskell source code with Haste, the compilation process will result in one binary file for the server and source code in JavaScript for the client~\cite{haste-symposium}.
 
 \section{JSFlow}
 JSFlow is an interpreter written in JavaScript that dynamically checks the JavaScript code at runtime to ensure information-flow security. Currently, JSFlow supports full information-flow control for ecma-262 v5 apart from strict mode. Also, the publicly available version of JSON is not supported.
@@ -94,14 +94,14 @@ Implicit flows occurs when e.g. a language's control structure is used to leak i
 \begin{figure}[h]
   \captionsetup[subfigure]{singlelinecheck=off,justification=raggedright}
   \begin{subfigure}[b]{0.5\textwidth}
-    \begin{lstlisting}[numbers=left]
+    \begin{lstlisting}
       l := h
     \end{lstlisting}
     \caption{Explicit flow}
     \label{fig:expflow}
   \end{subfigure}
   \begin{subfigure}[b]{0.5\textwidth}
-    \begin{lstlisting}[numbers=left]
+    \begin{lstlisting}
       h := h mod 2;
       l := 0;
       if h = 1 then l := 1;
@@ -134,7 +134,7 @@ When creating a web application in JavaScript that JSFlow should be able to chec
 The upg function will take a computation (in Figure~\ref{fig:upg} the compuation is simply the number 42) and bind that value to the assigned variable (in Figure~\ref{fig:upg} the variable h) and put the variable in a high context.
 
 \subsection{Flows in a pure functional language}
-Even though there are two different flows in Javascript (implicit and explicit flows), there is only one type of flow in a pure functional programming language like Haskell, an explicit flow.\cite{seclib} As described in \ref{chapter:implicit_flow}, an implicit flow depends on control structures in order to leak information. However, even though a pure functional programming language like Haskell contains control structures, they are still interpreted as a regular function. This means that a function like
+Even though there are two different flows in Javascript (implicit and explicit flows), there is only one type of flow in a pure functional programming language like Haskell, an explicit flow~\cite{seclib}. As described in Chapter~\ref{chapter:implicit_flow}, an implicit flow depends on control structures in order to leak information. However, even though a pure functional programming language like Haskell contains control structures, they are still interpreted as a regular function. This means that a function like
 \begin{center}
   \begin{lstlisting}[language=Haskell]
     f :: Int -> Int
@@ -143,7 +143,7 @@ Even though there are two different flows in Javascript (implicit and explicit f
             else -42
   \end{lstlisting}
 \end{center}
-will look like an implicit flow but is in fact an explicit flow. This is because an if-then-else can be rewritten as a regular function \cite{if-then-else}
+will look like an implicit flow but is in fact an explicit flow. This is because an if-then-else can be rewritten as a regular function~\cite{if-then-else}
 \begin{center}
   \begin{lstlisting}[language=Haskell]
     myIf :: Bool -> a -> a -> a
@@ -184,7 +184,7 @@ it would not be non-interfered because the confidentiality is broken. Informatio
     fBad2 (c, i) = (c, if ord c > 31 then 1 else 0)
   \end{lstlisting}
 \end{center}
-would give information about whether or not the variable \textbf{c} is a printable character (the ASCII values of printable characters start at 32\cite{ascii}).\cite{seclib}
+would give information about whether or not the variable \textbf{c} is a printable character (the ASCII values of printable characters start at 32~\cite{ascii})~\cite{seclib}.
 
 \section{Related Work}
 \label{chapter:related}

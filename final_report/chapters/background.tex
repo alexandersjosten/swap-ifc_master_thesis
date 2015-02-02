@@ -89,7 +89,7 @@ Within information-flow security, there are two types of flow that must be check
 With explicit flow, one means when a data in a \emph{high} context leaks information to a \emph{low} context explicitly. An example can be seen in Figure~\ref{fig:expflow} where the value of the high variable \emph{h} is leaked to the low variable \emph{l}. Obviously this should be illegal when information-flow security is applied and explicit flows are not difficult to find when dynamically checking the code. When data is written to a variable, one simply must keep track of the context of the variable and the context of the data. If the variable is in low context and the data is in high context an error should be produced and execution of the JavaScript code should be stopped. All other scenarios (high variable with high data, high variable with low data and low variable with low data) are allowed.
 \subsubsection{Implicit flow}
 \label{chapter:implicit_flow}
-Implicit flows are trickier to find.
+Implicit flows occurs when e.g. a language's control structure is used to leak information. Figure~\ref{fig:impflow} shows an example of an implicit flow. The variable \emph{l} will get the value 1 if and only if the variable \emph{h} is an odd number. Otherwise \emph{l} will have the value 0. A dynamic system that will handle implicit flows must associate a security context with the control flow~\cite{jsflow-csf12}. In Figure~\ref{fig:impflow}, the body of the if statement should be executed in a secure context and therefor the variable \emph{l} must be a secure variable in order for the flow to be valid.
 
 \begin{figure}[h]
   \captionsetup[subfigure]{singlelinecheck=off,justification=raggedright}

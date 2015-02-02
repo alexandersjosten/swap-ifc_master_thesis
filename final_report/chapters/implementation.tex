@@ -1,4 +1,4 @@
-\section{Implementation}
+\chapter{Implementation}
 \label{chapter:implementation}
 The implementation of the library consists of several modules which a user is allowed to use in order to create programs which are secure with regards to information flow control. The standard implementation of the library consists of a type \emph{Flow}, which is a flow in the program (i.e. data with a high or low tag). It also provides the user with standard operations, e.g. adding two flows if the flows are of such a type where addition is valid.
 
@@ -12,7 +12,7 @@ Currently, the library has a representation of all the standard operations withi
 \end{itemize}
 
 The Monad, Functor and Applicative instances for the High and Low Flow can be seen in Appendix~\ref{app:instances} and and example of how the standard operations for the Num type in Haskell can be found in Appendix~\ref{app:num_type}.
-\subsection{The Flow type}
+\section{The Flow type}
 \label{sec:flow}
 The Flow type is defined as a newtype in Haskell, i.e. a definition that can only contain one constructor. The Flow type became
 \begin{center}
@@ -31,19 +31,19 @@ and even though it has a tag in the definition (the left hand side), it does not
 \end{center}
 where a new Flow (the variable \emph{b}) is created and added with the given Flow \emph{f}.
 
-\subsubsection{Monad instance}
+\subsection{Monad instance}
 Two separate monad instances was created in order to be able to handle potential code generation towards Haste, one for High and one for Low flow. If Haste was the compiler, then the High flow needed to be compiled with a call to the \emph{upg} function in JSFlow.
 
 Every Monad created in Haskell must also be a Functor and an Applicative by the Functor-Applicative-Monad proposal\cite{functor_applicative_monad}. Starting from GHC 7.10, every Monad that is not a Functor or Applicative will generate a compile error. Due to the Functor-Applicative-Monad proposal, the created Monad for the Flow type is a Functor and an Applicative as well.
 
-\subsubsection{Functor instance}
+\subsection{Functor instance}
 \begin{center}
   \begin{lstlisting}[language=Haskell]
     fmap f ioa = ioa >>= return . f
   \end{lstlisting}
 \end{center}
 
-\subsubsection{Applicative instance}
+\subsection{Applicative instance}
 The Applicative instance is implemented simply by using primitives from the Monad class by having
 \begin{center}
   \begin{lstlisting}[language=Haskell]
@@ -52,7 +52,7 @@ The Applicative instance is implemented simply by using primitives from the Mona
   \end{lstlisting}
 \end{center}
 
-\subsection{Controlling the flow}
+\section{Controlling the flow}
 Even though there are only two types of tags for the flow, they need to be thoroughly controlled. It is possible to use type variables when creating a class instance in Haskell. In the case for the class \emph{FlowBool}, i.e. a class that contains all operations for the Haskell type Bool wrapped in the Flow type, it is created as
 \begin{center}
   \begin{lstlisting}[language=Haskell]
@@ -71,12 +71,12 @@ where t1, t2 and t3 are type variables. As can be seen, given two tags, t1 and t
 \end{center}
 The instance definitions give the rules for the Haskell type system which types the type variables can have and how to derive the resulting type. As can be seen, the only way for a \emph{FlowBool} to produce something of low value is when the two type variables t1 and t2 are low. As soon as either t1 or t2 or both are high, the result will be high. This holds for all classes in the library.
 
-\subsection{Handling side effects}
+\section{Handling side effects}
 Handling side effects in any language is a challenge from a security point of view. Potential shared states can be altered, data can be printed or exceptions could be thrown indicating an error has occurred. From the viewpoint of information flow control, all of these side effects must be monitored closely.
 
-\subsubsection{JSFlow and side effects}
+\subsection{JSFlow and side effects}
 
-\subsubsection{Side effects in the library}
+\subsection{Side effects in the library}
 The function that will handle the side effects has the following implementation:
 \begin{center}
   \begin{lstlisting}[language=Haskell]
@@ -97,7 +97,7 @@ Stricter compared to JSFlow?
 What can JSFlow do?
 Check out side effects in LIO.
 
-\subsection{Incorporating with Haste}
+\section{Incorporating with Haste}
 In order to incorporate the library with Haste, a communication between the library and Haste had to be created. This was done by using a preprocessing directive, the same preprocessing directive that Haste will set if the compilation process is done with Haste. The key difference for how the library should behave between GHC and Haste is the \emph{return} of the high flow within the Monad instance. The main difference is highlighted in the following code snippet:
 \begin{center}
   \begin{lstlisting}[language=Haskell]
@@ -116,5 +116,5 @@ If the program is compiled with Haste, then the computation given to return will
   \end{lstlisting}
 \end{center}
 which makes a FFI (Foreign Function Interface) call in order to wrap the compiled JavaScript code with a call to the JSFlow function upg. It is made opaque in order to avoid any optimizations from the compiler. This process does not have to be done with a low flow type since it should be executed as normal code by JSFlow. The full implementation of the Monad instance can be seen in Appendix~\ref{app:instances}.
-\subsubsection{Modifications done to Haste}
+\subsection{Modifications done to Haste}
 Since JSFlow only supports ECMA-262 v5 in non-strict mode and does not support JSON~\cite{jsflow}, some modifications to Haste were needed in order to produce Javascript source code which followed the ECMA-262 v5 standard~\cite{ecma262v5}. The code generation of Haste needed to be altered in order to not produce code for the JSON library and ECMA features that are introduced in ECMA-262 v6. Haste allows for ArrayBuffers to be produced, but since the concept of ArrayBuffer is in draft mode for ECMA-262 v6~\cite{js_arraybuffer, ecma_arraybuffer} they can not be supported by the current version of JSFlow. However, since crippling every user of Haste by removing features is not a good idea, a flag was added in case a user wants to compile towards JSFlow. This means that Haste will produce Javascript source code with features that are introduced in ECMA-262 v6 unless the user tells the compiler to produce source code that can be dynamically checked by JSFlow.

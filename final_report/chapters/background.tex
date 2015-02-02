@@ -1,8 +1,8 @@
-\section{Background}
+\chapter{Background}
 As mentioned in Chapter~\ref{chapter:intro}, JavaScript has several shortcommings. Two of the tools that will be used in this project are Haste\cite{haste-lang} and JSFlow\cite{jsflow,jsflow-csf12,jsflow-sac14}.
-\subsection{Problems with JavaScript - part deux}
+\section{Problems with JavaScript - part deux}
 As mentioned in Chapter~\ref{chapter:intro}, from a security standpoint JavaScript suffers from weak dynamic typing and having access to sensitive information in the browser.
-\subsubsection{Weak dynamic typing}
+\subsection{Weak dynamic typing}
 There are several odd features one can use in JavaScript due to the weak dynamic typing. Where a statically typed language (e.g. Java) would give a compile error, the JavaScript code will be run and perhaps succeed but with unexpected results. Figure~\ref{fig:error_java} shows a logical error that is caught at compile time in Java. If the code in Figure~\ref{fig:error_java} would be allowed to run, it would be up to the runtime environment to determine how the code would be interpreted. The same error in JavaScript i shown in Figure \ref{fig:error_js}. Since JavaScript does not have any static type checking the decision on how to interpret the code will be made at runtime. Instead of failing and raising a runtime error, JavaScript will convert the \textbf{true} value into a number which in this case corresponds to the number \textbf{1}. Hence the addition will be evaluated to \textbf{3}. Situatuations like that, where a clear type error is allowed to propagate and potentially change the state of the application should be considered dangerous and prone to producing bugs.
 
 Another issue with the weak type system in JavaScript can be seen in Figure~\ref{fig:js_comparison}. It is perfectly legal to compare a function with an array in JavaScript. The code in Figure~\ref{fig:js_comparison} will evaluate to \textbf{true}. This can in turn make it very difficult to find potential bugs since JavaScript will try and convert values of different types to the same types and then make the comparison. In e.g. Java, the comparison in Figure~\ref{fig:js_comparison} would not go through the type checker.
@@ -33,14 +33,14 @@ Another issue with the weak type system in JavaScript can be seen in Figure~\ref
   \label{fig:js_comparison}
 \end{figure}
 
-\subsubsection{Sensitive information in the browser}
+\subsection{Sensitive information in the browser}
 The browser has access to several different types of sensitive information and can be used by an attacker to get the sensitive information. JavaScript can gain access to e.g. cookies, send HTTP requests and make arbitrary DOM modifications. If untrusted JavaScript is executed in a victims browser, the attacker can, among other things, perform the following attacks:
 \begin{itemize}
   \item \textbf{Cookie theft}, where the attacker can gain access to the victim's cookies that are associated with the current website.
   \item \textbf{Keylogging}, where the attacker can create and register a keyboard event listener and send the keystrokes to the attacker's own server in order to potentially record passwords, credit card information etc.
   \item \textbf{Phishing}, where the attacker can insert fake forms by manipulating the DOM and fool the user to submit sensitive information which will be redirected to the attacker.
 \end{itemize}
-\subsubsection{Examples of attempts to solutions}
+\subsection{Examples of attempts to solutions}
 There have been several attempts of providing a more secure type system to JavaScript, everything from creating a statically typed language that compiles to JavaScript to a compiler from an already existing programming language and compile it to JavaScript to a static type checker. Examples of attempted soultions are
 \begin{itemize}
   \item \textbf{TypeScript}\cite{typescript}, a typed superset of JavaScript that compiles to plain JavaScript.
@@ -58,7 +58,7 @@ When looking at the other major flaw, namely that JavaScript has access to sensi
       \item \textbf{Caja}\cite{caja_spec}, a compiler to make third party code safe to embed within a website.
     \end{itemize}
 \end{itemize}
-\subsection{Haste}
+\section{Haste}
 Haste (HaSkell To Ecmascript compiler) is a compiler that compiles the high-level language Haskell to JavaScript. The Haste compiler is plugged in to the compilation process from GHC, the Glasgow Haskell Compiler. As can be seen in Figure~\ref{fig:system}, Haste starts its compiling process after GHC has done som code optimization. From the optimized code from GHC, Haste will create an AST, Abstract Syntax Tree, for JavaScript. The AST will then be optimized and after the optimization process in Haste is done the actual JavaScript code will be generated.
 \begin{figure}[h]
   \begin{tabular}{|c|c|c|}
@@ -81,13 +81,13 @@ Haste (HaSkell To Ecmascript compiler) is a compiler that compiles the high-leve
 
 When compiling the Haskell source code with Haste, the compilation process will result in one binary file for the server and source code in JavaScript for the client.\cite{haste-symposium}
 
-\subsection{JSFlow}
+\section{JSFlow}
 JSFlow is an interpreter written in JavaScript that dynamically checks the JavaScript code at runtime to ensure information-flow security. Currently, JSFlow supports full information-flow control for ecma-262 v5 apart from strict mode. Also, the publicly available version of JSON is not supported.
 
 Within information-flow security, there are two types of flow that must be checked - explicit flow and implicit flow. Even though there are several different ways an attacker can gain information about a system (e.g. via timing attacks), only explicit and implicit flows for computations will be considered. An implementation that guarantees that timing attacks are not able to succeed will not be given for this project.
-\subsubsection{Explicit flow}
+\subsection{Explicit flow}
 With explicit flow, one means when a data in a \emph{high} context leaks information to a \emph{low} context explicitly. An example can be seen in Figure~\ref{fig:expflow} where the value of the high variable \emph{h} is leaked to the low variable \emph{l}. Obviously this should be illegal when information-flow security is applied and explicit flows are not difficult to find when dynamically checking the code. When data is written to a variable, one simply must keep track of the context of the variable and the context of the data. If the variable is in low context and the data is in high context an error should be produced and execution of the JavaScript code should be stopped. All other scenarios (high variable with high data, high variable with low data and low variable with low data) are allowed.
-\subsubsection{Implicit flow}
+\subsection{Implicit flow}
 \label{chapter:implicit_flow}
 Implicit flows occurs when e.g. a language's control structure is used to leak information. Figure~\ref{fig:impflow} shows an example of an implicit flow. The variable \emph{l} will get the value 1 if and only if the variable \emph{h} is an odd number. Otherwise \emph{l} will have the value 0. A dynamic system that will handle implicit flows must associate a security context with the control flow~\cite{jsflow-csf12}. In Figure~\ref{fig:impflow}, the body of the if statement should be executed in a secure context and therefor the variable \emph{l} must be a secure variable in order for the flow to be valid.
 
@@ -113,7 +113,7 @@ Implicit flows occurs when e.g. a language's control structure is used to leak i
   \caption{Implicit and explicit flow}
 \end{figure}
 
-\subsubsection{Example of coding towards JSFlow}
+\subsection{Example of coding towards JSFlow}
 When creating a web application in JavaScript that JSFlow should be able to check, there is only one function that the programmer must know about - the \emph{upg} function. The function upg is used when lifting a computation in to a high context. In Figure~\ref{fig:upg}, the variable \emph{h} is lifted in to a high context by calling upg on the data to be stored to \emph{h}. Due to the call to upg, the variable h will be a high variable containing the number 42. As can be seen with the variables \emph{l}, which is a low variable, and \emph{t}, which is a high variable, the default level for a compuation is low unless JSFlow infers that a variable \textbf{must} be high due to part of the compuation being high.
 
 \begin{figure}[h]
@@ -133,7 +133,7 @@ When creating a web application in JavaScript that JSFlow should be able to chec
 \end{figure}
 The upg function will take a computation (in Figure~\ref{fig:upg} the compuation is simply the number 42) and bind that value to the assigned variable (in Figure~\ref{fig:upg} the variable h) and put the variable in a high context.
 
-\subsubsection{Flows in a pure functional language}
+\subsection{Flows in a pure functional language}
 Even though there are two different flows in Javascript (implicit and explicit flows), there is only one type of flow in a pure functional programming language like Haskell, an explicit flow.\cite{seclib} As described in \ref{chapter:implicit_flow}, an implicit flow depends on control structures in order to leak information. However, even though a pure functional programming language like Haskell contains control structures, they are still interpreted as a regular function. This means that a function like
 \begin{center}
   \begin{lstlisting}[language=Haskell]
@@ -159,7 +159,7 @@ where b1 and b2 are the different branches. The different branches are of type \
   \end{lstlisting}
 \end{center}
 
-\subsection{Non-Interference}
+\section{Non-Interference}
 Something about non-interference. Public outcomes does not depend on private input.
 
 Assume the following function where something of type \textbf{Char} is a high value and something of type \textbf{Int} is of low value:
@@ -186,14 +186,14 @@ it would not be non-interfered because the confidentiality is broken. Informatio
 \end{center}
 would give information about whether or not the variable \textbf{c} is a printable character (the ASCII values of printable characters start at 32\cite{ascii}).\cite{seclib}
 
-\subsection{Related Work}
+\section{Related Work}
 \label{chapter:related}
 There have been research within Information-Flow Control and libraries have been created in order to help enforce information flow policies and secure both confidentiality and integrity of the information. Some of the most influencial findings for this project will be described below.
-\subsubsection{LIO}
+\subsection{LIO}
 LIO (Labeled IO) is a library created in Haskell for dynamic information flow control~\cite{lio-2011}.
-\subsubsection{Seclib}
+\subsection{Seclib}
 Seclib is a light-weight library for information flow control in Haskell~\cite{seclib, seclib_git}. Just as with the library created in this thesis, Seclib is based on monads and all private data lives within the created monad. However, compared to the library in this thesis, Seclib creates two different monads, \textbf{Sec} and \textbf{SecIO}, where SecIO is an extended IO monad (an IO monad wrapped around a Sec monad). Seclib was designed to be a small, lightweight library and consists, as of Jan. 29 2015, 342 lines of code.
-\subsubsection{SeLINQ}
+\subsection{SeLINQ}
 
-\subsubsection{Why another library?}
+\subsection{Why another library?}
 As has been explained in Chapter~\ref{chapter:related}, there are already working libraries for information flow control so why would another library be needed? Even though the current libraries are good, they lack one part - integration with another system. The library created for this thesis is supposed to close the gap between a static control for information flow control and already created tools for dynamic check of information flow control (JSFlow) and created tools for securing Javascript from the viewpoint of a type system. The created library will be able to be run in GHC if one wants to create a system strictly for Haskell but it should also be able to run the code with Haste and as a result get produced Javascript code which is tagged so JSFlow can dynamically track the information flow.

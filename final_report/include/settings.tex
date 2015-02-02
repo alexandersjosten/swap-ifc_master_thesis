@@ -34,6 +34,24 @@
 \setlength{\extrarowheight}{4pt}
 \addtolength{\headheight}{\baselineskip}
 
+% Chapter headings style (fncychap)  Maybe remove this..?
+\makeatletter
+\ChNumVar{} % sets the style for digit
+\ChTitleVar{\Huge\bfseries\centering} % sets the style for title
+\ChRuleWidth{4pt} % Set RW=4pt
+\ChNameUpperCase % Make name uppercase
+\renewcommand{\DOCH}{
+\centering
+{\CNoV {\fontsize{60pt}{20pt}\selectfont\thechapter} }
+\vskip 40\p@}
+\renewcommand{\DOTI}[1]{%
+\CTV\FmTi{#1}\par\nobreak
+\vskip 40\p@}
+\renewcommand{\DOTIS}[1]{%
+\CTV\FmTi{#1}\par\nobreak
+\vskip 40\p@}
+\makeatother
+
 % Fancyheader (see packagescommands.tex for default/special)
 \pagestyle{fancy}
 \setdefaulthdr

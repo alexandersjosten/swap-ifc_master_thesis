@@ -1,11 +1,11 @@
-\section{Prototypes}
+\chapter{Prototypes}
 \label{chapter:prototypes}
 For this project, three different prototypes were developed. There are not many differences between the non-monadic and the monadic version and for the final implementation the monadic version was chosen.
-\subsection{EDSL}
+\section{EDSL}
 The first prototype developed was an EDSL (Embedded domain specific language)\cite{haskell_edsl} with deep embedding as the degree of embedding. In theory, an EDSL is a embedded language within an other language. In this case, the library would be a EDSL within Haskell. In the prototype, the different operations allowed were translated to constructors of a data type called Expr. Even though an EDSL is very powerfull it suffers from a major drawback. It is difficult to gain access to features from the main language. An example is recursion, something that exists in Haskell, that needs to be implemented again within the EDSL. Due to the constraint of not being able to use language-specific features without implementing them again, this prototype was quickly disposed of.
 
 NOTE: Show code??
-\subsection{Non-monadic}
+\section{Non-monadic}
 In the non-monadic prototype, the first thing that needed to be tested was different implementations for a type that defines a flow. The first version can be seen in Figure \ref{fig:first_flow} and contained a State monad from a tuple to a list of tuples. In principle, a state is used to keep track of the different data values and the respective tag. This would then be used to ensure that no information was leaked. Since Haste makes a lot of computations that is encapsulated within the IO monad, it was later decided to have the Flow type use the IO monad instead of the State monad. How Flow was implemented can be seen in chapter \ref{sec:flow}.
 \begin{figure}[h]
   \lstset{language=Haskell}
@@ -17,7 +17,7 @@ In the non-monadic prototype, the first thing that needed to be tested was diffe
 \end{figure}
 
 In order to use the Flow properly, several help functions were implemented. It turned out that the help functions were similar to functions in an Applicative and Functor instance so instead of copy the functionality the Flow type were implemented as instances of Applicative and Functor. That means that \(\frac{2}{3}\) of a Monad instance was implemented and the prototype was developed into a monadic version.
-\subsection{Monadic}
+\section{Monadic}
 The monadic prototype was a contiunation of the non-monadic version explained in the previous section. The only difference was that a Monad instance was implemented for the Flow type, making it possible to combine a action (i.e. something of the Monad type) and a reaction (i.e. a function from a computation of the action to another action). In short, this is the "bind" operator, \(>>=\). It also makes it easy to encapsulate a value into a monadic value. The type signatures of these actions can be seen in Figure \ref{fig:monadic_actions}. 
 \begin{figure}[h]
   \lstset{language=Haskell}

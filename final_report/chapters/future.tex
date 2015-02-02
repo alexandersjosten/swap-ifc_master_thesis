@@ -1,9 +1,9 @@
-\section{Future work}
+\chapter{Future work}
 No matter how satisfied one is, there is always more work that can be done. In this section, five different suggestions for how to proceed in the future will be presented. The suggestions are not only about how to make the library SwapIFC better, but also other potential work within the area of information flow control.
 
-\subsection{Full communication for SwapIFC to JSFlow}
+\section{Full communication for SwapIFC to JSFlow}
 
-\subsection{More primitives for the library}
+\section{More primitives for the library}
 A library for a language is never completed until it easily supports the entire language. For SwapIFC, an easy yet time consuming extension would be to add classes and primitives for more standard classes of Haskell. Adding support for handling strings and lists within the Flow monad is a easy next step to do. However, adding a class for every standard Haskell class would be tedious, so looking more on if it is possible to have a more general class within the Flow monad and easily lift values into it could also be a good next step.
 
 As of now, if a programmer want to use primitives for lists within a Flow instance he or she must write the entire function him/herself. This is something one should be able to assume that a library should handle. As of right now, it can be handled using Applicative. A very simple example of adding the primitive (++), which given two lists concatenates them, is
@@ -15,10 +15,10 @@ As of now, if a programmer want to use primitives for lists within a Flow instan
 \end{center}
 However, it has a major drawback. Since it uses Applicative and there are two different Applicative implementations (one for High and one for Low), both flows (f1 and f2) must have the same tag. So as of right now, a programmer who uses SwapIFC must either implemement the missing primitives him/herself or accept that all operands must be of the same type (in this case the same tag).
 
-\subsection{Add support for Haste.App}
+\section{Add support for Haste.App}
 When using Haste one can use Haste.App to perform program slicing~\cite{haste-symposium}. The point of the program slicing is to help the programmer to split the application between the server side and the client side. Haste.App introduces two monads, \textbf{App} and \textbf{Server} where App is the monad for the client side and Server the monad for the server side~\cite{haste-app}. When using Haste.App and compiling with Haste, the compiler will produce client side code (i.e. Javascript code) for everything in the App monad while producing a binary file for the server side for everything within the Server monad. This allows a programmer to write code as one application while during the compile phase have it split. Currently, SwapIFC does not support Haste.App. Even though it could work, no work has been done to support Haste.App and therefore a good idea in the future would be to look at Haste.App and ensure that SwapIFC does indeed support Haste.App.
 
-\subsection{More features for JSFlow}
+\section{More features for JSFlow}
 
-\subsection{End-to-End information flow control}
+\section{End-to-End information flow control}
 JSFlow can help check the Javascript code of an application. However, currently there is no system that ensures information flow control end-to-end. There has been work on securing database communication in LINQ using F\#~\cite{selinq}

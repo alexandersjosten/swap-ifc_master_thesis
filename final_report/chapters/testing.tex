@@ -9,12 +9,15 @@ In order to test SwapIFC with QuickCheck, every Flow instance and every operator
     let c = a .+. b
     return (tag of c == High && value of c == 42 + 10)
 
-    let a = mkLow 42
-    let b = mkLow 10
-    let c = a .<. b
-    return (tag of c == Low && value of c == 42 < 10)
+    let d = mkLow 42
+    let e = mkLow 10
+    let f = a .<. b
+    return (tag of f == Low && value of f == 42 < 10)
   \end{lstlisting}
 \end{center}
+
+The tags are only part of the type system and because of this some of the unsafe functions must be used in order to validate the tags. The unsafe functions used in the tests are \emph{unwrapValue} in order to check the computed flow value and \emph{unsafeShow} in order to get a string representation of the flow value. The string representation will be the value followed by "\_$<$T$>$", where T is either \emph{H} or \emph{L} for High and Low respectively. So in the example above, \emph{unsafeShow a} will yield the string "42\_$<$H$>$" and \emph{unsafeShow d} will yield the string "42\_$<$L$>$".
+
 The algorithm is repeated 10000 times and the source code can be found in Appendix~\ref{app:tests}.
 
 \begin{figure}[h]

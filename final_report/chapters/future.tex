@@ -18,7 +18,11 @@ However, it has a major drawback. Since it uses Applicative and there are two di
 \section{Add support for Haste.App}
 When using Haste one can use Haste.App to perform program slicing~\cite{haste-symposium}. The point of the program slicing is to help the programmer to split the application between the server side and the client side. Haste.App introduces two monads, \textbf{App} and \textbf{Server} where App is the monad for the client side and Server the monad for the server side~\cite{haste-app}. When using Haste.App and compiling with Haste, the compiler will produce client side code (i.e. Javascript code) for everything in the App monad while producing a binary file for the server side for everything within the Server monad. This allows a programmer to write code as one application while during the compile phase have it split. Currently, SwapIFC does not support Haste.App. Even though it could work, no work has been done to support Haste.App and therefore a good idea in the future would be to look at Haste.App and ensure that SwapIFC does indeed support Haste.App.
 
+\section{More features for Haste}
+Better FFI, perhaps parsing a JS-library and add security labels..
+
 \section{More features for JSFlow}
+ECMAScript-262 v6...
 
 \section{End-to-End information flow control}
 JSFlow can help check the Javascript code of an application. However, currently there is no system that ensures information flow control end-to-end. There has been work on securing database communication in LINQ using F\#~\cite{selinq}

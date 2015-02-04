@@ -6,19 +6,46 @@ The first prototype developed was an EDSL (Embedded domain specific language)~\c
 
 NOTE: Show code??
 \section{Non-monadic}
-In the non-monadic prototype, the first thing that needed to be tested was different implementations for a type that defines a flow. The first version can be seen in Figure~\ref{fig:first_flow} and contained a State monad from a tuple to a list of tuples. In principle, a state is used to keep track of the different data values and the respective tag. This would then be used to ensure that no information was leaked. Since Haste makes a lot of computations that is encapsulated within the IO monad, it was later decided to have the Flow type use the IO monad instead of the State monad. How Flow was implemented can be seen in Chapter~\ref{sec:flow}.
+In the non-monadic prototype, the first thing that needed to be tested was different implementations for a type that defines a flow. The first version can be seen in Figure~\ref{fig:first_flow} and contained a State monad from a tuple containing a level and a value to an InternalState. The InternalState were to keep track of the program counter (\emph{pc}) and all active scopes (\emph{activeScopes}). By keeping track of an internal state and the program counter, one could check if a computation leaks information or not. This has several drawbacks. First, it is complex; a program counter and keeping track of the internal state are not needed for a statical analysis - it can be done within the type system of Haskell. Second, keeping track of every variable is very tedious from the library that is to be created since Haste will generate variable names when the application is compiled. Having a dynamic representation of variable names within the created library will therefore not be necessary.
+\begin{figure}[h]
+  \lstset{language=Haskell}
+  \begin{lstlisting}
+    type Ident = String
+    type Scope a = Map Ident (Tag, Term a)
+    
+    data InternalState a = InState { pc :: Tag
+                                   , activeScopes :: [Scope a]
+                                   }
+
+    newtype Flow level a = Flow (State (level, a) (InternalState a))
+
+    data LType a where
+      LInt    :: Tag -> Int    -> LType (Tag, Int)
+      LString :: Tag -> String -> LType (Tag, String)
+      LBool   :: Tag -> Bool   -> LType (Tag, Bool)
+
+    data Term a where
+      TType :: Term (LType a)
+      TApp  :: Term a -> Term a
+
+  \end{lstlisting}
+  \caption{First attempt at a Flow type}
+  \label{fig:first_flow}
+\end{figure}
+
+The prototype shown in Figure~\ref{fig:first_flow} was revised to what is shown in Figure~\ref{fig:second_flow}. As in Figure~\ref{fig:first_flow}, it contained a State monad but this time it was from a tuple containing a tag and a value to a list of tuples of tags and values. In principle, a state is used to keep track of the different data values (i.e. computations) and their respective tags. This would then be used to ensure that no information was leaked. Since Haste makes a lot of computations that is encapsulated within the IO monad, it was later decided to have the Flow type use the IO monad instead of the State monad. How Flow was implemented can be seen in Chapter~\ref{sec:flow}.
 \begin{figure}[h]
   \lstset{language=Haskell}
   \begin{lstlisting}
     newtype Flow tag a = Flow (State (tag, a) [(tag, a)])
   \end{lstlisting}
   \caption{First attempt at a Flow type}
-  \label{fig:first_flow}
+  \label{fig:second_flow}
 \end{figure}
 
-In order to use the Flow properly, several help functions were implemented. It turned out that the help functions were similar to functions in an Applicative and Functor instance so instead of copy the functionality the Flow type were implemented as instances of Applicative and Functor. That means that \(\frac{2}{3}\) of a Monad instance was implemented and the prototype was developed into a monadic version.
+In order to use the Flow type properly, several help functions were implemented. It turned out that one of the help functions was similar to the bind operator for monads while other help functions were similar to the functions in the Applicative and Functor instances. With that in mind, the logical step was to attempt to write a monadic version of the Flow type.
 \section{Monadic}
-The monadic prototype was a contiunation of the non-monadic version explained in the previous section. The only difference was that a Monad instance was implemented for the Flow type, making it possible to combine a action (i.e. something of the Monad type) and a reaction (i.e. a function from a computation of the action to another action). In short, this is the "bind" operator, \(>>=\). It also makes it easy to encapsulate a value into a monadic value. The type signatures of these actions can be seen in Figure~\ref{fig:monadic_actions}. 
+The monadic prototype was a contiunation of the non-monadic version explained in the previous section. The only difference was that a Monad instance was implemented for the Flow type, making it possible to combine an action (i.e. something of the Monad type) and a reaction (i.e. a function from a computation of the action to another action). In short, this is the "bind" operator, \(>>=\). It also makes it easy to encapsulate a value into a monadic value. The type signatures of these actions can be seen in Figure~\ref{fig:monadic_actions}.
 \begin{figure}[h]
   \lstset{language=Haskell}
   \begin{lstlisting}

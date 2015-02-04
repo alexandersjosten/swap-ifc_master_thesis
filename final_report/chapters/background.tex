@@ -159,17 +159,22 @@ where b1 and b2 are the different branches. The different branches are of type \
   \end{lstlisting}
 \end{center}
 
-\section{Non-Interference}
-Something about non-interference. Public outcomes does not depend on private input.
+\section{Non-interference}
+The principles of non-interference were introduced by Goguen and Meseguer in 1982~\cite{non-interference-goguen-meseguer} who defined non-interference to be
+\newline
+\begin{center}
+  \emph{one group of users, using a certain\\set of commands, is noninterfering\\with another group of users if what\\the first group does with those\\commands has no effect on what the\\second group of users can see.}
+\end{center}
+When talking about non-interference with regards to information flow control, one means a property that states that the public outcome does not depend on any private input.
 
-Assume the following function where something of type \textbf{Char} is a high value and something of type \textbf{Int} is of low value:
+As an example of non-interference, assume the following function where something of type \textbf{Char} is a high value and something of type \textbf{Int} is of low value:
 \begin{center}
   \begin{lstlisting}[language=Haskell]
     fOk :: (Char, Int) -> (Char, Int)
     fOk (c, i) = (chr (ord c + i), i + 42)
   \end{lstlisting}
 \end{center}
-The function \textbf{f} does not leak any valuable information about the value \textbf{c} but rather preserves the confidentiality. The function \textbf{fOk} is \emph{non-interfered} since the public result (the Int value) is independent of the value of \textbf{c}. If the function was defined as
+The function \textbf{fOk} preserves the confidentiality since it does not leak any valuable information about the value \textbf{c}. It is said to be \emph{non-interfered} since the public result (the Int value) is independent of the value of \textbf{c}. If the function instead was defined as
 \begin{center}
   \begin{lstlisting}[language=Haskell]
     fBad1 :: (Char, Int) -> (Char, Int)
@@ -178,13 +183,19 @@ The function \textbf{f} does not leak any valuable information about the value \
 \end{center}
 it would not be non-interfered because the confidentiality is broken. Information about \textbf{c} is leaked through the low Int and the corresponding decimal value of the ASCII number of \textbf{c} is returned as the second value of the tuple.
 
+Unfortunately, information leakage is seldom as explicit as in the fBad1 function. An attacker might be clever and attempt
 \begin{center}
   \begin{lstlisting}[language=Haskell]
     fBad2 :: (Char, Int) -> (Char, Int)
     fBad2 (c, i) = (c, if ord c > 31 then 1 else 0)
   \end{lstlisting}
 \end{center}
-would give information about whether or not the variable \textbf{c} is a printable character (the ASCII values of printable characters start at 32~\cite{ascii})~\cite{seclib}.
+which would give information about whether or not the variable \textbf{c} is a printable character (the ASCII values of printable characters start at 32~\cite{ascii})~\cite{seclib}. Just as with fBad1, fBad2 does not satisfy the non-interference property.
+
+\section{Declassification}
+A system that satisfies the non-interference policy is a very strict system. A system usually needs some kind of controlled release of confidential data. As an example, imagine a login system. A user's password should be handled as confidential data when the user attempts to login. If the login succeeded the user should be authenticated and redirected whereas if the login failed the user should be prompted with a message saying the username/password combination was incorrect. If the system was non-interfered, there could be no message explaining to the user that the username/password was incorrect since that output would rely on confidential data. Another example could be when a credit card is being used to pay with online. In the order receipt it is not uncommon to include the last four digits of the credit card number. Again, this is something that can not be done if the system is non-interfered since a credit card number should be considered confidential.
+
+In order to allow controlled information leak one can use declassification policies.
 
 \section{Related Work}
 \label{chapter:related}

@@ -202,14 +202,14 @@ Taking the example of the credit card explained above and assuming a function \e
     l := declassify(getLastFour(h))
   \end{lstlisting}
 \end{center}
-However, just allowing declassification everywhere can be dangerous. Work on classifying the declassification into four different dimensions has been presented in~\cite{declassification-dimensions}. The proposed dimensions are
+However, just allowing declassification everywhere can be dangerous. In theory, an attacker could compromise the declassification and extract more information than intended. Due to this, work on classifying the declassification into four different dimensions has been presented in~\cite{declassification-dimensions}. The proposed dimensions are
 \begin{itemize}
   \item \textbf{What} information is released.
   \item \textbf{Who} controls the information release.
   \item \textbf{Where} in the system the information is released from.
   \item \textbf{When} the information is released.
 \end{itemize}
-
+and these should be seen as recommendations for how to build the declassification policies in systems.
 \section{Related Work}
 \label{chapter:related}
 There have been research within Information-Flow Control and libraries have been created in order to help enforce information flow policies and secure both confidentiality and integrity of the information. Some of the most influencial findings for this project will be described below.

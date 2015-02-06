@@ -1,5 +1,73 @@
 \chapter{Testing of the implementation}
 The testing part of the project was done in two different ways. First, randomized tests of SwapIFC were done using QuickCheck~\cite{quickcheck, quickcheck-wiki}. Randomized testing is an area where a lot of research has been made.
+\section{"Naïve" testing of the primitives}
+One does not need to write randomized tests in order to test the primitives of the library. All that is needed is to write functions that captures every potential scenario. For the "add" primitive of two flows, the valid flows can be seen in Figure~\ref{fig:validFlow}.
+\begin{figure}[h]
+  \begin{center}
+    \begin{lstlisting}[language=Haskell]
+      testFlowNumLL :: Num a
+                    => Flow Low a
+                    -> Flow Low a
+                    -> Flow Low a
+      testFlowNumLL = (.+.)
+    
+      testFlowNumLH :: Num a
+                    => Flow Low a
+                    -> Flow High a
+                    -> Flow High a
+      testFlowNumLH = (.+.)
+    
+      testFlowNumHL :: Num a
+                    => Flow High a
+                    -> Flow Low a
+                    -> Flow High a
+      testFlowNumHL = (.+.)
+    
+      testFlowNumHH :: Num a
+                    => Flow High a
+                    -> Flow High a
+                    -> Flow High a
+      testFlowNumHH = (.+.)
+    \end{lstlisting}
+  \end{center}
+  \caption{Valid flows for add primitive}
+  \label{fig:validFlow}
+\end{figure}
+However, if one attempted any of the following flows that is present in Figure~\ref{fig:invalidFlow}, it would yield a compile time error due to the typeclass FlowNum not being defined for those cases. FlowNum is only defined to allow information flow like the ones in Figure~\ref{fig:validFlow}. This holds for every primitive in the library.
+\begin{figure}[h]
+  \begin{center}
+    \begin{lstlisting}[language=Haskell]
+      testFlowNumLL' :: Num a
+                     => Flow Low a
+                     -> Flow Low a
+                     -> Flow High a
+      testFlowNumLL' = (.+.)
+    
+      testFlowNumLH' :: Num a
+                     => Flow Low a
+                     -> Flow High a
+                     -> Flow Low a
+      testFlowNumLH' = (.+.)
+
+      testFlowNumHL' :: Num a
+                     => Flow High a
+                     -> Flow Low a
+                     -> Flow Low a
+      testFlowNumHL' = (.+.)
+
+      testFlowNumHH' :: Num a
+                     => Flow High a
+                     -> Flow High a
+                     -> Flow Low a
+      testFlowNumHH' = (.+.)
+    \end{lstlisting}
+  \end{center}
+  \caption{Invalid flows for add primitive}
+  \label{fig:invalidFlow}
+\end{figure}
+This is of course not a feasable solution and because of this, unit testing and random testing with QuickCheck was done.
+\section{Unit testing}
+aosfijasofjas
 \section{Testing of the library with QuickCheck}
 In order to test SwapIFC with QuickCheck, every Flow instance and every operator needed to be modeled as a constructor of a datatype. This is to help randomize both the instance class and the operator. The probability distribution for each class is the same and given a class, the probability distribution for each operation is the same. The general algorithm for the tests can be seen in Figure~\ref{fig:testing_swapifc}. Note that the \emph{oneof} function and the \emph{generateXFlows} functions are random functions and the \emph{validate} will return true if and only if the result of the operand \emph{op} applied to the flows in \emph{flows} will generate the same value as the normal operand corresponding to \emph{op} applied to the normal values corresponding to \emph{flows} and that the tag is being preserved. The preservation of the tag means that if any of the operands have a High tag, then the result must be High. An example of this is the following:
 \begin{center}
@@ -26,24 +94,24 @@ The algorithm is repeated 10000 times and the source code can be found in Append
     \begin{algorithmic}
       \State $c\gets oneof([Num, Frac, Bool, Eq, Ord])$
       \If {$c == Num$}
-          \State $op\gets oneof([Add, Sub, Mul, Neg, Abs, Sig])$
-          \State $flows\gets generateNumFlows$
+      \State $op\gets oneof([Add, Sub, Mul, Neg, Abs, Sig])$
+      \State $flows\gets generateNumFlows$
       \EndIf        
       \If {$c == Frac$}
-          \State $op\gets oneof([Div, Recip, FromRational])$
-          \State $flows\gets generateFracFlows$
+      \State $op\gets oneof([Div, Recip, FromRational])$
+      \State $flows\gets generateFracFlows$
       \EndIf
       \If {$c == Bool$}
-          \State $op\gets oneof([And, Or, Not])$
-          \State $flows\gets generateBoolFlows$
+      \State $op\gets oneof([And, Or, Not])$
+      \State $flows\gets generateBoolFlows$
       \EndIf
       \If {$c == Eq$}
-          \State $op\gets oneof([Equals, NotEquals])$
-          \State $flows\gets generateEqFlows$
+      \State $op\gets oneof([Equals, NotEquals])$
+      \State $flows\gets generateEqFlows$
       \EndIf
       \If {$c == Ord$}
-          \State $op\gets oneof([Less, GreaterEquals, LessEquals, Greater, Max, Min])$
-          \State $flows\gets generateOrdFlows$
+      \State $op\gets oneof([Less, GreaterEquals, LessEquals, Greater, Max, Min])$
+      \State $flows\gets generateOrdFlows$
       \EndIf
       \State
       \State
@@ -61,7 +129,7 @@ aosifjasofijasfoij
     \caption{Testing JSFlow compatibility algorithm}
     \begin{algorithmic}
       \If {$c == 42$}
-         \State $a\gets 10$
+      \State $a\gets 10$
       \EndIf
     \end{algorithmic}
   \end{algorithm}

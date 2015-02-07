@@ -22,7 +22,30 @@ When using Haste one can use Haste.App to perform program slicing~\cite{haste-sy
 Better FFI, perhaps parsing a JS-library and add security labels..
 
 \section{More features for JSFlow}
-ECMAScript-262 v6...
+As JSFlow only supports ECMA-262 v5 in non-strict mode and does not support JSON (JavaScript Object Notation), a natural continuation would be to add and implement support for strict mode and JSON communication. Information flow control for JSON objects imposes a big challenge. JSON objects are used to simplify data transfer over a network and is both easy to read/write for humans and easy to parse for computers~\cite{json}. It consists of \emph{key, value} pairs, where a key (a string) is mapped to a value. An example of a simple JSON object is
+\begin{lstlisting}[language=Java]
+  {
+    "firstName" : "Sherlock",
+    "lastName" : "Holmes",
+    "alive" : false,
+    "children" : [],
+    "address" : {
+      "streetName" : "Backer Street",
+      "streetNbr" : "221 B",
+      "city" : "London",
+      "country" : "England"
+    },
+    "spouse" : null
+  }
+\end{lstlisting}
+where the key "firstName" is mapped to the string "Sherlock" and the key "address" is mapped to a JSON object containing the information about the address. The challenges from a information flow control viewpoint is \emph{"how to effectively guarantee that no private information is leaked through JSON objects?"}. It is easy to see it is not trivial to guarantee information flow security through JSON, but should be considered as a natural next step for a dynamic system designed to guarantee information flow control in Javascript.
+
+Another feature for JSFlow would be to start add what is new in ECMA-262 v6, e.g. adding support for ArrayBuffer which represents a generic, fixed-length binary data buffer~\cite{js_arraybuffer}. Added support for HTML5 with Websockets and make it compatible to run in a browser should of course also be considered as important features to add.
 
 \section{End-to-End information flow control}
-JSFlow can help check the Javascript code of an application. However, currently there is no system that ensures information flow control end-to-end. There has been work on securing database communication in LINQ using F\#~\cite{selinq}
+JSFlow can help check the Javascript code of an application. However, currently there is no system that ensures a cross-origin end-to-end information flow control. As mentioned in Chapter~\ref{chapter:related}, work has been done to create good information flow control libraries in Haskell. An example is LMonad, which provided information flow control for Yesod, including database interactions. There has also been work on securing database communication in LINQ using F\# with SeLINQ~\cite{selinq}, which would help track information flow across the boundaries of applications and databases. As a proof of concept, a type checker for a subset of F\# was implemented. A good continuation would be to generalize the end-to-end communication. There are several ways this can be done.
+\begin{itemize}
+  \item Build a dynamic system for information flow control in back-end communication (e.g. database communication).
+  \item Create a compiler which compiles from a high-level language to e.g. the database query language to guarantee type safety and use the aforementioned tool to guarantee run-time information flow control.
+  \item Model the system in e.g. Haskell and enable the rich type system to create a static analysis of the model to ensure no information leakage occurs.
+\end{itemize}

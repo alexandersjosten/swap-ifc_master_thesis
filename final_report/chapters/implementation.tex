@@ -35,14 +35,69 @@ where a new Flow (the variable \emph{b}) is created and added with the given Flo
 Two separate monad instances was created in order to be able to handle potential code generation towards Haste, one for High and one for Low flow. If Haste was the compiler, then the High flow needed to be compiled with a call to the \emph{upg} function in JSFlow.
 
 Every Monad created in Haskell must also be a Functor and an Applicative by the Functor-Applicative-Monad proposal~\cite{functor_applicative_monad}. Starting from GHC 7.10, every Monad that is not a Functor or Applicative will generate a compile error. Due to the Functor-Applicative-Monad proposal, the created Monad for the Flow type is a Functor and an Applicative as well.
-
+\subsubsection{Monad laws and Flow}
+If the Flow type is implemented correctly as a monad, it should satisfy the following three laws~\cite{functor-monad-law}:
+\begin{lstlisting}[language=Haskell]
+  1.  return a >>= k  ==  k a
+  2.  m >>= return  ==  m
+  3.  m >>= (\x -> k x >>= h)  ==  (m >>= k) >>= h
+\end{lstlisting}
+The first monadic law is easy to prove. It can be done in two steps:
+\begin{alltt}
+  1. return a >>= k = Flow (IO a) >>= k
+  2.                = k a
+\end{alltt}
+where the transformation on line 1 is due to the definition of return in the library and the transformation on line 2 is due to the definition of bind in the library.
+\newline
+\newline
+The second rule is just as easily shown.
+\begin{alltt}
+  1. m >>= return = Flow (IO a) >>= return
+  2.              = return a
+  3.              = Flow (IO a)
+\end{alltt}
+The transformation between lines 1 and 2 is due to the definition of bind and the transformation on line 3 is due to the definition of return.
+\newline
+\newline
+The third law:
+\begin{alltt}
+  1. m >>= (\(\lambda\)x -> k x >>= h) = Flow (IO a) >>= (\(\lambda\)x -> k x >>= h)
+  2.                                   = (Flow (IO a) >>= k) >>= h
+  3.                                   = (m >>= k) >>= h
+\end{alltt}
+Due to the type signature of bind, \emph{m} must be of type \emph{Monad m => m a}, \emph{k x} must be a monadic value (which indicates that the function \emph{k} must have the type signature (Monad m =\(>\) a -\(>\) m b)) and \emph{h} must have type (Monad m =\(>\) b -\(>\) m c). Due to this, it should be allowed to have (m \(>>\)= k) since that would mean (Monad m =\(>\) m a \(>>\)= (a -\(>\) m b)) which would type check. The result of (m \(>>\)= k) is (m b) and since \emph{h} has type signature (Monad m =\(>\) b -\(>\) m c), it is valid to have (m \(>>\)= k) \(>>\)= h.
 \subsection{Functor instance}
+In order for the Flow type to be an instance of Functor, the function \emph{fmap} must be implemented. When defining a functor, one can see it as transforming a pure function into a monadic function (if the functor is also a monad). If a type is an instance of both the Monad and Functor classes, then the implementation of \emph{fmap} must obey the following law:
 \begin{center}
   \begin{lstlisting}[language=Haskell]
+    fmap :: Functor f => (a -> b) -> f a -> f b
     fmap f ioa = ioa >>= return . f
   \end{lstlisting}
 \end{center}
+which uses the \emph{bind} and the \emph{return} functions of the monad instance~\cite{functor-monad-law}. Since the Flow type should not be allowed to be transformed into something that is not a monad, this is the implementation of fmap the library will use.
+\subsubsection{Functor laws and Flow}
+In order for the Flow type to have a proper implementation of fmap, there are two laws that must be obeyed~\cite{functor-laws}, namely
+\begin{center}
+  \begin{lstlisting}[language=Haskell]
+    1.  fmap id  ==  id
+    2.  fmap (f . g)  ==  fmap f . fmap g
+  \end{lstlisting}
+\end{center}
+In order to see that the functor implementation satisfies the first law, it can be simplified:
+\begin{alltt}
+  1. fmap id = \(\lambda\)x -> x >>= return . id
+  2.         = \(\lambda\)x -> x >>= (return . id)
+  3.         = \(\lambda\)x -> x >>= return
+  4.         = \(\lambda\)x -> x
+  5.         = id
+\end{alltt}
+where the transformations on line 2 is due to precedence of function composition, line 3 is due to the fact that (return . id) has the type (Monad m => a -> m a). Line 4 uses the second monadic law and line 5 uses the fact that a function that takes one argument and does nothing but returning that argument is by definition the id function.
 
+\begin{alltt}
+  1. fmap (f . g) = \(\lambda\)x -> x >>= return . (f . g)
+  2.              = \(\lambda\)x -> x >>= (return . (f . g))
+  3.              = 
+\end{alltt}
 \subsection{Applicative instance}
 The Applicative instance is implemented simply by using primitives from the Monad class by having
 \begin{center}

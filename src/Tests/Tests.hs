@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleContexts, RankNTypes, FlexibleInstances #-}
-
 module Tests.Tests where
 
 import Test.QuickCheck hiding ((.||.), (.&&.))

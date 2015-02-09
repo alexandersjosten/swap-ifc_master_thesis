@@ -86,7 +86,44 @@ In order to test SwapIFC with QuickCheck, every Flow instance and every operator
 
 The tags are only part of the type system and because of this some of the unsafe functions must be used in order to validate the tags. The unsafe functions used in the tests are \emph{unwrapValue} in order to check the computed flow value and \emph{unsafeShow} in order to get a string representation of the flow value. The string representation will be the value followed by "\_$<$T$>$", where T is either \emph{H} or \emph{L} for High and Low respectively. So in the example above, \emph{unsafeShow a} will yield the string "42\_$<$H$>$" and \emph{unsafeShow d} will yield the string "42\_$<$L$>$".
 
-The algorithm is repeated 10000 times and the source code can be found in Appendix~\ref{app:tests}.
+\begin{figure}[h]
+  \begin{alltt}
+    *Tests.Tests> main
+    Testing FlowNum with only Low arguments:
+    +++ OK, passed 100000 tests.
+    Testing FlowNum with only High arguments:
+    +++ OK, passed 100000 tests.
+    Testing FlowNum with mix of High and Low arguments:
+    +++ OK, passed 100000 tests.
+    Testing FlowFrac with only Low arguments:
+    +++ OK, passed 100000 tests.
+    Testing FlowFrac with only High arguments:
+    +++ OK, passed 100000 tests.
+    Testing FlowFrac with mix of High and Low arguments:
+    +++ OK, passed 100000 tests.
+    Testing FlowBool with only Low arguments:
+    +++ OK, passed 100000 tests.
+    Testing FlowBool with only High arguments:
+    +++ OK, passed 100000 tests.
+    Testing FlowBool with mix of High and Low arguments:
+    +++ OK, passed 100000 tests.
+    Testing FlowEqOrd (only Eq) with only Low arguments:
+    +++ OK, passed 100000 tests.
+    Testing FlowEqOrd (only Eq) with only High arguments:
+    +++ OK, passed 100000 tests.
+    Testing FlowEqOrd (only Eq) with mix of High and Low arguments:
+    +++ OK, passed 100000 tests.
+    Testing FlowEqOrd (only Ord) with only Low arguments:
+    +++ OK, passed 100000 tests.
+    Testing FlowEqOrd (only Ord) with only High arguments:
+    +++ OK, passed 100000 tests.
+    Testing FlowEqOrd (only Ord) with mix of High and Low arguments:
+    +++ OK, passed 100000 tests.
+  \end{alltt}
+  \caption{Printout of running random tests}
+  \label{fig:tests}
+\end{figure}
+The algorithm is repeated 100000 times and the source code can be found in Appendix~\ref{app:tests} while the printout of running the test program can be seen in Figure~\ref{fig:tests}.
 
 \begin{figure}[h]
   \begin{algorithm}[H]

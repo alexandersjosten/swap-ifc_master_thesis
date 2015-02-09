@@ -4,6 +4,7 @@ import Test.QuickCheck hiding ((.||.), (.&&.))
 import System.IO.Unsafe
 import SwapIFC
 import qualified SwapIFC.Types as T
+import Data.Ratio
 
 -- Instance needed for quickCheck to be happy..
 instance (T.Tag t, Show a) => Show (Flow t a) where
@@ -149,35 +150,44 @@ prop_mixedNumExpr (op, val1, val2) =
         flow2 = mkLow val2
 
 
-prop_lowFracExpr :: (FracOp, Double, Double) -> Bool
-prop_lowFracExpr (op, val1, val2) =
+prop_lowFracExpr :: (FracOp, Double, Double, Integer) -> Property
+prop_lowFracExpr (op, val1, val2, val3) = val1 /= 0.0 && val2 /= 0.0 ==>
   case op of
     Div          -> show (flow1 ./. flow2) == show (val1 / val2) ++ "_<L>" &&
                     show (flow2 ./. flow1) == show (val2 / val1) ++ "_<L>"
     Recip        -> show (fRecip flow1) == show (recip val1) ++ "_<L>"
-    FromRational -> True --show (fFromRational flow1) == show (fromRational val1) ++ "_<L>"
+    FromRational -> show (fFromRational flow3) == show (fromRational (val3 % 1)) ++ "_<L>"
   where flow1 = mkLow val1
         flow2 = mkLow val2
+        flow3 = mkLow (val3 % 1)
 
-prop_highFracExpr :: (FracOp, Double, Double) -> Bool
-prop_highFracExpr (op, val1, val2) =
+prop_highFracExpr :: (FracOp, Double, Double, Integer) -> Property
+prop_highFracExpr (op, val1, val2, val3) = val1 /= 0.0 && val2 /= 0.0 ==>
   case op of
     Div          -> show (flow1 ./. flow2) == show (val1 / val2) ++ "_<H>" &&
                     show (flow2 ./. flow1) == show (val2 / val1) ++ "_<H>"
     Recip        -> show (fRecip flow1) == show (recip val1) ++ "_<H>"
-    FromRational -> True --show (fFromRational flow1) == show (fromRational val1) ++ "_<H>"
+    FromRational -> show (fFromRational flow3) == show (fromRational (val3 % 1)) ++ "_<H>"
   where flow1 = mkHigh val1
         flow2 = mkHigh val2
+        flow3 = mkHigh (val3 % 1)
 
-prop_mixedFracExpr :: (FracOp, Double, Double) -> Bool
-prop_mixedFracExpr (op, val1, val2) =
+prop_mixedFracExpr :: (FracOp, Double, Double, Integer, Integer) -> Property
+prop_mixedFracExpr (op, val1, val2, val3, val4) = val1 /= 0 && val2 /= 0 && val3 /= 0 && val4 /= 0 ==>
   case op of
     Div          -> show (flow1 ./. flow2) == show (val1 / val2) ++ "_<H>" &&
                     show (flow2 ./. flow1) == show (val2 / val1) ++ "_<H>"
     Recip        -> show (fRecip flow1) == show (recip val1) ++ "_<H>"
-    FromRational -> True --show (fFromRational flow1) == show (fromRational val1) ++ "_<H>"
-  where flow1 = mkHigh val1
-        flow2 = mkLow val2
+    FromRational -> show (fFromRational flow34H) == show (fromRational (val3 % val4)) ++ "_<H>" &&
+                    show (fFromRational flow43H) == show (fromRational (val4 % val3)) ++ "_<H>" &&
+                    show (fFromRational flow34L) == show (fromRational (val3 % val4)) ++ "_<L>" &&
+                    show (fFromRational flow43L) == show (fromRational (val4 % val3)) ++ "_<L>"
+  where flow1   = mkHigh val1
+        flow2   = mkLow val2
+        flow34H = mkHigh (val3 % val4)
+        flow43H = mkHigh (val4 % val3)
+        flow34L = mkLow (val3 % val4)
+        flow43L = mkLow (val4 % val3)
 
 
 

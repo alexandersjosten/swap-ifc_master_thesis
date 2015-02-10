@@ -66,10 +66,12 @@ However, if one attempted any of the following flows that is present in Figure~\
   \label{fig:invalidFlow}
 \end{figure}
 This is of course not a feasable solution and because of this, unit testing and random testing with QuickCheck was done.
+
 \section{Unit testing}
-aosfijasofjas
+A slightly more clever way of testing compared to the naîve testing described above is unit testing. The main principle of the unit testing is to isolate parts of a program or library and show its correctness by conducting tests on the specific part. For SwapIFC, the unit testing consisted of 202 tests which tested every primitive of the library. Given that all 202 tests yielded a correct result, the probability that the primitives behave correctly is considered high. However, unit testing is manual testing and it can be difficult to find edge cases and because of this, random tests using QuickCheck were also conducted.
+
 \section{Testing of the library with QuickCheck}
-In order to test SwapIFC with QuickCheck, every Flow instance and every operator needed to be modeled as a constructor of a datatype. This is to help randomize both the instance class and the operator. The probability distribution for each class is the same and given a class, the probability distribution for each operation is the same. The general algorithm for the tests can be seen in Figure~\ref{fig:testing_swapifc}. Note that the \emph{oneof} function and the \emph{generateXFlows} functions are random functions and the \emph{validate} will return true if and only if the result of the operand \emph{op} applied to the flows in \emph{flows} will generate the same value as the normal operand corresponding to \emph{op} applied to the normal values corresponding to \emph{flows} and that the tag is being preserved. The preservation of the tag means that if any of the operands have a High tag, then the result must be High. An example of this is the following:
+In order to test SwapIFC with QuickCheck, every operator for the different Flow instances needed to be modeled as a constructor of a datatype. The probability distribution for each operator within an instance is the same. The general algorithm for the FlowNum instance tests can be seen in Figure~\ref{fig:testing_swapifc}. Note that the \emph{oneof} function is a function that will pick one of the elements in the list at a normal distribution and the \emph{randomInteger} function simply generates a random integer. The \emph{validate} function will return true if and only if the result of the operand \emph{op} applied to the flows \emph{flow1, flow2} will generate the same value as the normal operand corresponding to \emph{op} applied to the normal values corresponding to the flows, \emph{val1, val2} and if the tag is being preserved. The preservation of the tag means that if any of the operands have a High tag, then the result must be High. An example of this is the following:
 \begin{center}
   \begin{lstlisting}[language=Haskell]
     let a = mkHigh 42
@@ -84,78 +86,43 @@ In order to test SwapIFC with QuickCheck, every Flow instance and every operator
   \end{lstlisting}
 \end{center}
 
-The tags are only part of the type system and because of this some of the unsafe functions must be used in order to validate the tags. The unsafe functions used in the tests are \emph{unwrapValue} in order to check the computed flow value and \emph{unsafeShow} in order to get a string representation of the flow value. The string representation will be the value followed by "\_$<$T$>$", where T is either \emph{H} or \emph{L} for High and Low respectively. So in the example above, \emph{unsafeShow a} will yield the string "42\_$<$H$>$" and \emph{unsafeShow d} will yield the string "42\_$<$L$>$".
+The tags are only part of the type system and because of this some of the unsafe functions must be used in order to validate the tags. The unsafe functions used in the tests are \emph{unwrapValue} in order to check the computed flow value and \emph{unsafeShow} in order to get a string representation of the flow value. The string representation will be the value followed by "\_$<$T$>$", where T is either \emph{H} or \emph{L} for High and Low respectively. In the example above, \emph{unsafeShow a} will yield the string "42\_$<$H$>$" and \emph{unsafeShow d} will yield the string "42\_$<$L$>$".
 
-\begin{figure}[h]
-  \begin{alltt}
-    *Tests.Tests> main
-    Testing FlowNum with only Low arguments:
-    +++ OK, passed 100000 tests.
-    Testing FlowNum with only High arguments:
-    +++ OK, passed 100000 tests.
-    Testing FlowNum with mix of High and Low arguments:
-    +++ OK, passed 100000 tests.
-    Testing FlowFrac with only Low arguments:
-    +++ OK, passed 100000 tests.
-    Testing FlowFrac with only High arguments:
-    +++ OK, passed 100000 tests.
-    Testing FlowFrac with mix of High and Low arguments:
-    +++ OK, passed 100000 tests.
-    Testing FlowBool with only Low arguments:
-    +++ OK, passed 100000 tests.
-    Testing FlowBool with only High arguments:
-    +++ OK, passed 100000 tests.
-    Testing FlowBool with mix of High and Low arguments:
-    +++ OK, passed 100000 tests.
-    Testing FlowEqOrd (only Eq) with only Low arguments:
-    +++ OK, passed 100000 tests.
-    Testing FlowEqOrd (only Eq) with only High arguments:
-    +++ OK, passed 100000 tests.
-    Testing FlowEqOrd (only Eq) with mix of High and Low arguments:
-    +++ OK, passed 100000 tests.
-    Testing FlowEqOrd (only Ord) with only Low arguments:
-    +++ OK, passed 100000 tests.
-    Testing FlowEqOrd (only Ord) with only High arguments:
-    +++ OK, passed 100000 tests.
-    Testing FlowEqOrd (only Ord) with mix of High and Low arguments:
-    +++ OK, passed 100000 tests.
-  \end{alltt}
-  \caption{Printout of running random tests}
-  \label{fig:tests}
-\end{figure}
-The algorithm is repeated 100000 times and the source code can be found in Appendix~\ref{app:tests} while the printout of running the test program can be seen in Figure~\ref{fig:tests}.
+Each test function is repeated 100000 times with random values and the source code for the FlowNum random tests can be found in Appendix~\ref{app:tests}.
 
 \begin{figure}[h]
   \begin{algorithm}[H]
-    \caption{Testing SwapIFC algorithm}
+    \caption{Testing FlowNum in SwapIFC algorithm}
     \begin{algorithmic}
-      \State $c\gets oneof([Num, Frac, Bool, Eq, Ord])$
-      \If {$c == Num$}
+      \Function{TestNumBothLow}{}
       \State $op\gets oneof([Add, Sub, Mul, Neg, Abs, Sig])$
-      \State $flows\gets generateNumFlows$
-      \EndIf        
-      \If {$c == Frac$}
-      \State $op\gets oneof([Div, Recip, FromRational])$
-      \State $flows\gets generateFracFlows$
-      \EndIf
-      \If {$c == Bool$}
-      \State $op\gets oneof([And, Or, Not])$
-      \State $flows\gets generateBoolFlows$
-      \EndIf
-      \If {$c == Eq$}
-      \State $op\gets oneof([Equals, NotEquals])$
-      \State $flows\gets generateEqFlows$
-      \EndIf
-      \If {$c == Ord$}
-      \State $op\gets oneof([Less, GreaterEquals, LessEquals, Greater, Max, Min])$
-      \State $flows\gets generateOrdFlows$
-      \EndIf
+      \State $(val1, val2)\gets (randomInteger, randomInteger)$
+      \State $flow1\gets mkLow(val1)$
+      \State $flow2\gets mkLow(val2)$
       \State
+      \Return Validate flow1 flow2 op val1 val2 Low
+      \EndFunction
+
+      \Function{TestNumBothHigh}{}
+      \State $op\gets oneof([Add, Sub, Mul, Neg, Abs, Sig])$
+      \State $(val1, val2)\gets (randomInteger, randomInteger)$
+      \State $flow1\gets mkHigh(val1)$
+      \State $flow2\gets mkHigh(val2)$
       \State
-      \Return Validate flows op
+      \Return Validate flow1 flow2 op val1 val2 High
+      \EndFunction
+
+      \Function{TestNumMixedHighLow}{}
+      \State $op\gets oneof([Add, Sub, Mul, Neg, Abs, Sig])$
+      \State $(val1, val2)\gets (randomInteger, randomInteger)$
+      \State $flow1\gets mkHigh(val1)$
+      \State $flow2\gets mkLow(val2)$
+      \State
+      \Return Validate flow1 flow2 op val1 val2 High
+      \EndFunction
     \end{algorithmic}
   \end{algorithm}
-  \caption{Pseudo code for the testing of SwapIFC}
+  \caption{Pseudo code for the testing of FlowNum in SwapIFC}
   \label{fig:testing_swapifc}
 \end{figure}
 

@@ -1,7 +1,7 @@
 \chapter{Instance implementation}
 \label{app:instances}
 The implementation for Monad, Functor and Applicative for the Flow type became:
-\begin{lstlisting}[language=Haskell]
+\begin{verbatim}
   -- High Flow starts here!
   instance Monad (Flow High) where
   #ifdef __HASTE__
@@ -37,4 +37,4 @@ The implementation for Monad, Functor and Applicative for the Flow type became:
   instance Applicative (Flow Low) where
     pure = return
     (<*>) = ap
-\end{lstlisting}
+\end{verbatim}

@@ -1,6 +1,6 @@
 \chapter{Tests}
 \label{app:tests}
-\begin{lstlisting}[language=Haskell]
+\begin{verbatim}
 -- The FlowNum tests
 prop_lowNumExpr :: (NumOp, Int, Int) -> Bool
 prop_lowNumExpr (op, val1, val2) =
@@ -46,57 +46,4 @@ prop_mixedNumExpr (op, val1, val2) =
     Sig -> show (fSig flow1) == show (signum val1) ++ "_<H>"
   where flow1 = mkHigh val1
         flow2 = mkLow val2
-
--- The FlowFrac tests
-prop_lowFracExpr :: (FracOp, Double, Double, Integer)
-                 -> Property
-prop_lowFracExpr (op, val1, val2, val3) =
-  val1 /= 0.0 && val2 /= 0.0 ==>
-    case op of
-      Div -> show (flow1 ./. flow2) == show (val1 / val2) ++ "_<L>" &&
-             show (flow2 ./. flow1) == show (val2 / val1) ++ "_<L>"
-      Recip -> show (fRecip flow1) == show (recip val1) ++ "_<L>"
-      FromRational ->
-        show (fFromRational flow3) == show fromRat ++ "_<L>"
-    where flow1 = mkLow val1
-          flow2 = mkLow val2
-          flow3 = mkLow (val3 % 1)
-          fromRat = fromRational (val3 % 1)
-
-prop_highFracExpr :: (FracOp, Double, Double, Integer)
-                  -> Property
-prop_highFracExpr (op, val1, val2, val3) =
-  val1 /= 0.0 && val2 /= 0.0 ==>
-    case op of
-      Div -> show (flow1 ./. flow2) == show (val1 / val2) ++ "_<H>" &&
-             show (flow2 ./. flow1) == show (val2 / val1) ++ "_<H>"
-      Recip -> show (fRecip flow1) == show (recip val1) ++ "_<H>"
-      FromRational ->
-        show (fFromRational flow3) == show fromRat ++ "_<H>"
-    where flow1   = mkHigh val1
-          flow2   = mkHigh val2
-          flow3   = mkHigh (val3 % 1)
-          fromRat = fromRational (val3 % 1))
-
-prop_mixedFracExpr :: (FracOp, Double, Double, Integer, Integer)
-                   -> Property
-prop_mixedFracExpr (op, val1, val2, val3, val4) =
-  val1 /= 0 && val2 /= 0 && val3 /= 0 && val4 /= 0 ==>
-    case op of
-      Div -> show (flow1 ./. flow2) == show (val1 / val2) ++ "_<H>" &&
-             show (flow2 ./. flow1) == show (val2 / val1) ++ "_<H>"
-      Recip -> show (fRecip flow1) == show (recip val1) ++ "_<H>"
-      FromRational ->
-        show (fFromRational flow34H) == show fromRat34 ++ "_<H>" &&
-        show (fFromRational flow43H) == show fromRat43 ++ "_<H>" &&
-        show (fFromRational flow34L) == show fromRat34 ++ "_<L>" &&
-        show (fFromRational flow43L) == show fromRat43 ++ "_<L>"
-    where flow1     = mkHigh val1
-          flow2     = mkLow val2
-          flow34H   = mkHigh (val3 % val4)
-          flow43H   = mkHigh (val4 % val3)
-          flow34L   = mkLow (val3 % val4)
-          flow43L   = mkLow (val4 % val3)
-          fromRat34 = fromRational (val3 % val4)
-          fromRat43 = fromRational (val4 % val3))
-\end{lstlisting}
+\end{verbatim}

@@ -1,6 +1,6 @@
 \chapter{Num instance in Flow type}
 \label{app:num_type}
-\begin{lstlisting}[language=Haskell]
+\begin{verbatim}
 -- Num instance for Flow
 infixl 7 .*.
 infixl 6 .+., .-.
@@ -47,4 +47,4 @@ appNumFlow :: Num a => (a -> a) -> Flow t1 a -> Flow t1 a
 appNumFlow f (Flow ioa) = Flow $ do
   a <- ioa
   return $ f a
-\end{lstlisting}
+\end{verbatim}

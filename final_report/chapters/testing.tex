@@ -34,7 +34,7 @@ One does not need to write randomized tests in order to test the primitives of t
   \caption{Valid flows for add primitive}
   \label{fig:validFlow}
 \end{figure}
-However, if one attempted any of the following flows that is present in Figure~\ref{fig:invalidFlow}, it would yield a compile time error due to the typeclass FlowNum not being defined for those cases. FlowNum is only defined to allow information flow like the ones in Figure~\ref{fig:validFlow}. This holds for every primitive in the library.
+However, if one attempted any of the following flows that is present in Figure~\ref{fig:invalidFlow}, it would yield a compile time error due to the typeclass {\tt FlowNum} not being defined for those cases. {\tt FlowNum} is only defined to allow information flow like the ones in Figure~\ref{fig:validFlow}. This holds for every primitive in the library.
 \begin{figure}[h]
   \begin{center}
     \begin{lstlisting}[language=Haskell]
@@ -72,9 +72,8 @@ This is of course not a feasable solution and because of this, unit testing and 
 A slightly more clever way of testing compared to the naîve testing described above is unit testing. The main principle of the unit testing is to isolate parts of a program or library and show its correctness by conducting tests on the specific part. For SwapIFC, the unit testing consisted of 202 tests which tested every primitive of the library. Given that all 202 tests yielded a correct result, the probability that the primitives behave correctly is considered high. However, unit testing is manual testing and it can be difficult to find edge cases and because of this, random tests using QuickCheck were also conducted.
 
 \section{Testing of the library with QuickCheck}
-In order to test SwapIFC with QuickCheck, every operator for the different Flow instances needed to be modeled as a constructor of a datatype. The probability distribution for each operator within an instance is the same. The general algorithm for the FlowNum instance tests can be seen in Figure~\ref{fig:testing_swapifc}. Note that the \emph{oneof} function is a function that will pick one of the elements in the list at a normal distribution and the \emph{randomInteger} function simply generates a random integer. The \emph{validate} function will return true if and only if the result of the operand \emph{op} applied to the flows \emph{flow1, flow2} will generate the same value as the normal operand corresponding to \emph{op} applied to the normal values corresponding to the flows, \emph{val1, val2} and if the tag is being preserved. The preservation of the tag means that if any of the operands have a High tag, then the result must be High. An example of this is the following:
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+In order to test SwapIFC with QuickCheck, every operator for the different {\tt Flow} instances needed to be modeled as a constructor of a datatype. The probability distribution for each operator within an instance is uniformed. The general algorithm for the {\tt FlowNum} instance tests can be seen in Figure~\ref{fig:testing_swapifc}. Note that the \emph{oneof} function is a function that will pick one of the elements in the list at a uniform distribution and the \emph{randomInteger} function simply generates a random integer. The \emph{validate} function will return true if and only if the result of the operand \emph{op} applied to the flows \emph{flow1, flow2} will generate the same value as the normal operand corresponding to \emph{op} applied to the normal values corresponding to the flows, \emph{val1, val2} and if the tag is being preserved. The preservation of the tag means that if any of the operands have a {\tt High} tag, then the result must be {\tt High}. An example of this is the following:
+\begin{verbatim}
     let a = mkHigh 42
     let b = mkLow 10
     let c = a .+. b
@@ -84,12 +83,11 @@ In order to test SwapIFC with QuickCheck, every operator for the different Flow 
     let e = mkLow 10
     let f = a .<. b
     return (tag of f == Low && value of f == 42 < 10)
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
 
-The tags are only part of the type system and because of this some of the unsafe functions must be used in order to validate the tags. The unsafe functions used in the tests are \emph{unwrapValue} in order to check the computed flow value and \emph{unsafeShow} in order to get a string representation of the flow value. The string representation will be the value followed by "\_$<$T$>$", where T is either \emph{H} or \emph{L} for High and Low respectively. In the example above, \emph{unsafeShow a} will yield the string "42\_$<$H$>$" and \emph{unsafeShow d} will yield the string "42\_$<$L$>$".
+The tags are only part of the type system and because of this some of the unsafe functions must be used in order to validate the tags. The unsafe functions used in the tests are {\tt unwrapValue} in order to check the computed flow value and {\tt unsafeShow} in order to get a string representation of the flow value. The string representation will be the value followed by "\_$<$T$>$", where T is either \emph{H} or \emph{L} for {\tt High} and {\tt Low} respectively. In the example above, {\tt unsafeShow a} will yield the string "42\_$<$H$>$" and {\tt unsafeShow d} will yield the string "42\_$<$L$>$".
 
-Each test function is repeated 100000 times with random values and the source code for the FlowNum random tests can be found in Appendix~\ref{app:tests}.
+Each test function is repeated 100000 times with random values and the source code for the {\tt FlowNum} random tests can be found in Appendix~\ref{app:tests}.
 
 \begin{figure}[h]
   \begin{algorithm}[H]

@@ -11,24 +11,20 @@ Currently, the library has a representation of all the standard operations withi
   \item Ord
 \end{itemize}
 
-The Monad, Functor and Applicative instances for the High and Low Flow can be seen in Appendix~\ref{app:instances} and and example of how the standard operations for the Num type in Haskell can be found in Appendix~\ref{app:num_type}.
+The Monad, Functor and Applicative instances for the High and Low Flow can be seen in Appendix~\ref{app:instances} and and example of how the standard operations for the Num type in Haskell can be found in Appendix~\ref{app:num_type}. An overview of the structure of the library can be seen in Appendix~\ref{app:library_structure}.
 \section{The Flow type}
 \label{sec:flow}
 The Flow type is defined as a newtype in Haskell, i.e. a definition that can only contain one constructor. The Flow type became
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+\begin{verbatim}
     newtype Flow tag a = Flow (IO a)
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
 and even though it has a tag in the definition (the left hand side), it does not contain a tag on the right hand side. Instead, the tag is implemented as a phantom type~\cite{haskell_phantom} which means that it can be checked by the type checker but not looked at by the user via e.g. pattern-matching. This means that from a user standpoint, the Flow type is simply a container for IO actions and the rules for the information flow control rules are implemented in the type checker alone. An example of how to add five to a Flow of High value is
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+\begin{verbatim}
     addFiveFlow :: Flow High Int -> Flow High Int
     addFiveFlow f = do
       let b = mkHigh 5
       f .+. b
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
 where a new Flow (the variable \emph{b}) is created and added with the given Flow \emph{f}.
 
 \subsection{Monad instance}
@@ -37,19 +33,18 @@ Two separate monad instances was created in order to be able to handle potential
 Every Monad created in Haskell must also be a Functor and an Applicative by the Functor-Applicative-Monad proposal~\cite{functor_applicative_monad}. Starting from GHC 7.10, every Monad that is not a Functor or Applicative will generate a compile error. Due to the Functor-Applicative-Monad proposal, the created Monad for the Flow type is a Functor and an Applicative as well.
 \subsubsection{Monad laws and Flow}
 If the Flow type is implemented correctly as a monad, it should satisfy the following three laws~\cite{functor-monad-law}:
-\begin{lstlisting}[language=Haskell]
+\begin{alltt}
   1.  return a >>= k  ==  k a
   2.  m >>= return  ==  m
-  3.  m >>= (\x -> k x >>= h)  ==  (m >>= k) >>= h
-\end{lstlisting}
+  3.  m >>= (\(\lambda\)x -> k x >>= h)  ==  (m >>= k) >>= h
+\end{alltt}
 The first monadic law is easy to prove. It can be done in two steps:
 \begin{alltt}
   1. return a >>= k = Flow (IO a) >>= k
   2.                = k a
 \end{alltt}
 where the transformation on line 1 is due to the definition of return in the library and the transformation on line 2 is due to the definition of bind in the library.
-\newline
-\newline
+
 The second rule is just as easily shown.
 \begin{alltt}
   1. m >>= return = Flow (IO a) >>= return
@@ -57,32 +52,37 @@ The second rule is just as easily shown.
   3.              = Flow (IO a)
 \end{alltt}
 The transformation between lines 1 and 2 is due to the definition of bind and the transformation on line 3 is due to the definition of return.
-\newline
-\newline
-The third law:
+
+To show that the third law is satisfied, it is enough to show that m \(>>\)= (\(\lambda\)x -\(>\) k x \(>>\)= h) and (m \(>>\)= k) \(>>\)= h would evaluate to an equal value. m \(>>\)= (\(\lambda\)x -\(>\) k x \(>>\)= h) is evaluated as:
 \begin{alltt}
   1. m >>= (\(\lambda\)x -> k x >>= h) = Flow (IO a) >>= (\(\lambda\)x -> k x >>= h)
-  2.                                   = (Flow (IO a) >>= k) >>= h
-  3.                                   = (m >>= k) >>= h
+  2.                                   = (\(\lambda\)x -> k x >>= h) a
+  3.                                   = k a >>= h
 \end{alltt}
-Due to the type signature of bind, \emph{m} must be of type \emph{Monad m => m a}, \emph{k x} must be a monadic value (which indicates that the function \emph{k} must have the type signature (Monad m =\(>\) a -\(>\) m b)) and \emph{h} must have type (Monad m =\(>\) b -\(>\) m c). Due to this, it should be allowed to have (m \(>>\)= k) since that would mean (Monad m =\(>\) m a \(>>\)= (a -\(>\) m b)) which would type check. The result of (m \(>>\)= k) is (m b) and since \emph{h} has type signature (Monad m =\(>\) b -\(>\) m c), it is valid to have (m \(>>\)= k) \(>>\)= h.
+where the transformation between lines 1 and 2 is due to the definition of bind. It is simple lambda-calculus to apply the value \emph{a} to the function (\(\lambda\)x -\(>\) k x \(>>\)= h) on line two and it is through this the result on line 3 is derived.
+\newline
+\newline
+Similarly, deriving (m \(>>\)= k) \(>>\)= h will yield
+\begin{alltt}
+  1. (m >>= k) >>= h = (Flow (IO a) >>= k) >>= h
+  2.                 = k a >>= h
+\end{alltt}
+where the transformation between lines 1 and 2 is due to the definition of bind. As can be seen, both m \(>>\)= (\(\lambda\)x -\(>\) k x \(>>\)= h) and (m \(>>\)= k) \(>>\)= h yield the same result and are therefor equal.
+
+Due to the type signature of bind, \emph{m} must be of type \emph{Monad m =\(>\) m a}, \emph{k x} must be a monadic value (which indicates that the function \emph{k} must have the type signature (Monad m =\(>\) a -\(>\) m b)) and \emph{h} must have type (Monad m =\(>\) b -\(>\) m c). Due to this, it should be allowed to have (m \(>>\)= k) since that would mean (Monad m =\(>\) m a \(>>\)= (a -\(>\) m b)) which would type check. The result of (m \(>>\)= k) is (m b) and since \emph{h} has type signature (Monad m =\(>\) b -\(>\) m c), it is valid to have (m \(>>\)= k) \(>>\)= h.
 \subsection{Functor instance}
 In order for the Flow type to be an instance of Functor, the function \emph{fmap} must be implemented. When defining a functor, one can see it as transforming a pure function into a monadic function (if the functor is also a monad). If a type is an instance of both the Monad and Functor classes, then the implementation of \emph{fmap} must obey the following law:
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+\begin{verbatim}
     fmap :: Functor f => (a -> b) -> f a -> f b
     fmap f ioa = ioa >>= return . f
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
 which uses the \emph{bind} and the \emph{return} functions of the monad instance~\cite{functor-monad-law}. Since the Flow type should not be allowed to be transformed into something that is not a monad, this is the implementation of fmap the library will use.
 \subsubsection{Functor laws and Flow}
 In order for the Flow type to have a proper implementation of fmap, there are two laws that must be obeyed~\cite{functor-laws}, namely
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
-    1.  fmap id  ==  id
-    2.  fmap (f . g)  ==  fmap f . fmap g
-  \end{lstlisting}
-\end{center}
+\begin{alltt}
+  1.  fmap id  ==  id
+  2.  fmap (f . g)  ==  fmap f . fmap g
+\end{alltt}
 In order to see that the functor implementation satisfies the first law, it can be simplified:
 \begin{alltt}
   1. fmap id = \(\lambda\)x -> x >>= return . id
@@ -91,24 +91,81 @@ In order to see that the functor implementation satisfies the first law, it can 
   4.         = \(\lambda\)x -> x
   5.         = id
 \end{alltt}
-where the transformations on line 2 is due to precedence of function composition, line 3 is due to the fact that (return . id) has the type (Monad m => a -> m a). Line 4 uses the second monadic law and line 5 uses the fact that a function that takes one argument and does nothing but returning that argument is by definition the id function.
+where the transformations on line 2 is due to precedence of function composition, line 3 is due to the fact that (return . id) has the type (Monad m =\(>\) a -\(>\) m a). Line 4 uses the second monadic law and line 5 uses the fact that a function that takes one argument and does nothing but returning that argument is by definition the id function.
 
 \begin{alltt}
   1. fmap (f . g) = \(\lambda\)x -> x >>= return . (f . g)
   2.              = \(\lambda\)x -> x >>= (return . (f . g))
-  3.              = 
+  3.              = Flow (IO a) >>= (return . (f . g))
+  4.              = (return . (f . g)) a
+  5.              = 
+\end{alltt}
+
+\begin{alltt}
+  1. fmap f . fmap g = (\(\lambda\)x -> x >>= return . f) . (\(\lambda\)x -> x >>= return . g)
+  2.                 = (Flow (IO a) >>= return . f) . (\(\lambda\)x -> x >>= return . g)
+  3.                 = (Flow (IO a) >>= return . f) . (Flow (IO a) >>= return . g)
+  4.                 = ((return . f) a) . (Flow (IO a) >>= return . g)
+  5.                 = ((return . f) a) . ((return . g) a)
+  6.                 = (return (f a)) . (return (g a))
+  7.                 = 
 \end{alltt}
 \subsection{Applicative instance}
 The Applicative instance is implemented simply by using primitives from the Monad class by having
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+\begin{verbatim}
+  pure  = return
+  (<*>) = ap
+\end{verbatim}
+In order for a instance of Applicative to be correctly implemented, the following laws must be satisfied:
+\begin{alltt}
+  1.  pure id <*> v = v
+  2.  pure (.) <*> u <*> v <*> w = u <*> (v <*> w)
+  3.  pure f <*> pure x = pure (f x)
+  4.  u <*> pure y = pure ($ y) <*> u
+\end{alltt}
+The first law:
+\begin{alltt}
+  1. pure id <*> v = return id `ap` v
+  2.               = Flow id `ap` v
+  3.               = v
+\end{alltt}
+The second law:
+\begin{alltt}
+  1. pure (.) <*> u <*> v <*> w = return (.) `ap` u `ap` v `ap` w
+  2.                            = Flow id `ap` v
+  3.                            = v
+\end{alltt}
+The third law:
+\begin{alltt}
+  1. pure f <*> pure x = return f `ap` return x
+  2.                   = Flow (IO f) `ap` Flow (IO x)
+  3.                   = pure (f x)
+\end{alltt}
+The fourth law:
+\begin{alltt}
+  1. u <*> pure y = u `ap` return y
+  2.              = u `ap` Flow (IO y)
+  3.              = Flow (a -> b) `ap` Flow (IO y)
+  4.              = Flow ($ y)
+  5.              = return ($ y)
+\end{alltt}
+\begin{alltt}
+  1. pure ($ y) <*> u = return ($ y) `ap` u
+  2.                  = u `ap` Flow (IO y)
+  3.                  = Flow (a -> b) `ap` Flow (IO y)
+  4.                  = Flow ($ y)
+  5.                  = return ($ y)
+\end{alltt}
+
+There are two more laws for applicatives that state that if the applicative is also a monad, then the following properties must hold:
+\begin{verbatim}
     pure  = return
     (<*>) = ap
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
+and it is trivial to see that these properties do hold since it is the exact implementation of the Applicative instance for Flow.
 
 \section{Controlling the flow}
-Even though there are only two types of tags for the flow, they need to be thoroughly controlled. It is possible to use type variables when creating a class instance in Haskell. In the case for the class \emph{FlowBool}, i.e. a class that contains all operations for the Haskell type Bool wrapped in the Flow type, it is created as
+Even though there are only two types of tags for the flow, they need to be thoroughly controlled. It is possible to use type variables when creating a class instance in Haskell. In the case for the class {\tt FlowBool}, i.e. a class that contains all operations for the Haskell type Bool wrapped in the Flow type, it is created as
 \begin{center}
   \begin{lstlisting}[language=Haskell]
     class FlowBool t1 t2 t3 | t1 t2 -> t3 where
@@ -116,25 +173,63 @@ Even though there are only two types of tags for the flow, they need to be thoro
   \end{lstlisting}
 \end{center}
 where t1, t2 and t3 are type variables. As can be seen, given two tags, t1 and t2, it is possible to derive the resulting tag t3. In order for Haskell to know how the different type variables relate to eachother, instance definitions must be added:
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+\begin{verbatim}
     instance FlowBool High High High
     instance FlowBool High Low High
     instance FlowBool Low High High
     instance FlowBool Low Low Low
-  \end{lstlisting}
-\end{center}
-The instance definitions give the rules for the Haskell type system which types the type variables can have and how to derive the resulting type. As can be seen, the only way for a \emph{FlowBool} to produce something of low value is when the two type variables t1 and t2 are low. As soon as either t1 or t2 or both are high, the result will be high. This holds for all classes in the library.
+\end{verbatim}
+The instance definitions give the rules for the Haskell type system which types the type variables can have and how to derive the resulting type. As can be seen, the only way for a {\tt FlowBool} to produce something of low value is when the two type variables t1 and t2 are low. As soon as either t1 or t2 or both are high, the result will be high. This holds for all classes in the library.
+
+\subsection{Declassification of flows}
+When looking at the declassification dimensions mentioned in Chapter~\ref{chapter:declassification}, the library only implements the \textbf{who} dimension. The only person who can declassify information is a person who has access to the \textbf{trusted} code base (see Appendix~\ref{app:library_structure}). There is no limit as to \textbf{what} data that can be declassified other then the fact that it must be data that is tagged as {\tt High}. There is also no limit as to \textbf{when} or \textbf{where} the person can declassify data.
+
+There is also no way to declassify data without using the declassification function in the trusted code base. One could imagine a person with malicious intent tries to use {\tt >>=} (the bind-operator) to downgrade a {\tt Flow} from {\tt High} to {\tt Low}. The {\tt >>=} operator has the following type signature:
+\begin{verbatim}
+    >>= :: Monad m => m a -> (a -> m b) -> m b
+\end{verbatim}
+Assume the malicious person has a {\tt Flow High} called {\tt fHigh}, i.e.
+\begin{verbatim}
+    fHigh :: Flow High
+\end{verbatim}
+There exists a function {\tt mkLow} that, given a value, creates a {\tt Flow Low} instance with the given value, i.e.
+\begin{verbatim}
+    mkLow :: a -> Flow Low a
+\end{verbatim}
+Now, assume the malicious person tries to use {\tt >>=} and {\tt mkLow} to downgrade a {\tt Flow High a} to a {\tt Flow Low a}. He/she could try to create the following malicious function:
+\begin{verbatim}
+    maliciousFunction :: a -> Flow Low b
+    maliciousFunction x = mkLow x
+\end{verbatim}
+and attempt to combine {\tt fHigh} with {\tt maliciousFunction}:
+\begin{verbatim}
+    fHigh >>= maliciousFunction
+\end{verbatim}
+with the hopes of getting something of type {\tt Flow Low a}. However, this will not be possible as the compiler will produce a compile error. This is understandable if one looks at how the type signature is for the malicious expression:
+\begin{verbatim}
+    (fHigh >>= maliciousFunction) :: Flow High a
+                                  -> (a -> Flow Low b)
+                                  -> Flow ??? b
+\end{verbatim}
+There are two different monad instances for {\tt Flow}, one for {\tt High} and one for {\tt Low} and each has its own implementation of {\tt >>=}. As the first argument to {\tt >>=} is of type {\tt Flow High a}, the compiler can deduce that it must use the implementation of {\tt >>=} that exists in the {\tt Flow High} monad instance. That means that the second argument, the function, must be of type {\tt (a -> Flow High b)}. However, the second argument in this malicious attempt is of type {\tt a -> Flow Low b} and due to this, malicious declassification can not be done by using {\tt >>=}. Note that this holds the other way around as well, i.e. there is no way to upgrade a value of type {\tt Flow Low a} to {\tt Flow High a} by using {\tt >>=}. Instead the function {\tt upgrade} must be used.
+
+\subsection{Non-interference of flows}
+Due to the functional dependencies and the instance definitions, using only the primitives and not having access to the trusted code base will lead to non-interference. However, non-interference can not be guaranteed within the trusted code base due to the declassification primitive and the unsafe operations ({\tt unsafeShow} to show the value of a {\tt Flow} and {\tt unwrapValue} that will strip the {\tt Flow} and {\tt IO} monad and return the pure value). The tests described in Chapter~\ref{chapter:testing} shows that the confidentiality level of a {\tt Flow} is indeed preserved when using the primitives in the library.
 
 \section{Handling side effects}
 Handling side effects in any language is a challenge from a security point of view. Potential shared states can be altered, data can be printed or exceptions could be thrown indicating an error has occurred. From the viewpoint of information flow control, all of these side effects must be monitored closely.
 
 \subsection{JSFlow and side effects}
+In order to handle side effects, JSFlow keeps track of a \emph{program counter label (pc)}. The program counter reflects the confidentiality level for guard expressions controlling branches in the program and prevents the modification of less confidential values. This is very similar to how the implicit flows are handled in JSFlow. More formal, it must hold that:
+\[
+\forall ge \in GuardExpressions: ge_c \geq pc
+\]
+where GuardExpressions is the set of expressions within the specified guard and \(ge_c\) is the confidentiality level for the expression \(ge\). If any violations occur, the execution will halt.
 
 \subsection{Side effects in the library}
-The function that will handle the side effects has the following implementation:
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+\label{chapter:side-effects-library}
+Side effects are currently not supported in the library. Even though one can have a Haskell program with side effects, there is no guarantee it will be safe with regards to information flow control.  The function that will run the flow has the following implementation:
+\begin{verbatim}
     runFlow :: Flow t () -> IO ()
     runFlow (Flow ioa) = do
       res <- try ioa
@@ -142,68 +237,56 @@ The function that will handle the side effects has the following implementation:
         Left err -> let e = err :: SomeException
                     in return ()
         Right () -> return ()
-  \end{lstlisting}
-\end{center}
-As can be seen, the implementation uses Haskell's Unit-type.
+\end{verbatim}
+As can be seen, the implementation uses Haskell's Unit-type. Due to this fact, there is no way to extract any actual value. The only thing that can be done is to run the IO computation. Information will not leak in the current implementation even when exceptions occur. This means that a person with malicious intent will not notice any difference when executing a program that throws an exception and a program which does not throw an exception.
 
-Mention unit type - Correlates to void in e.g. Java.
-What should be allowed and how to do it?
-Stricter compared to JSFlow?
-What can JSFlow do?
-Check out side effects in LIO.
+%Mention unit type - Correlates to void in e.g. Java.
+%What should be allowed and how to do it?
+%Stricter compared to JSFlow?
+%What can JSFlow do?
+%Check out side effects in LIO.
 
 \section{Incorporating with Haste}
+\label{chapter:incorporating-with-haste}
 In order to incorporate the library with Haste, a communication between the library and Haste had to be created. This was done by using a preprocessing directive, the same preprocessing directive that Haste will set if the compilation process is done with Haste. The key difference for how the library should behave between GHC and Haste is the \emph{return} of the high flow within the Monad instance. The main difference is highlighted in the following code snippet:
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+\begin{verbatim}
     #ifdef __HASTE__
       return = Flow . upg
     #else
       return = Flow . return
     #endif
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
 If the program is compiled with Haste, then the computation given to return will be executed within the function upg
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+\begin{verbatim}
     upg :: a -> IO a
     upg = fmap fromOpaque . ffi "upg" . toOpaque
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
 which makes a FFI (Foreign Function Interface) call in order to wrap the compiled JavaScript code with a call to the JSFlow function upg. It is made opaque in order to avoid any optimizations from the compiler. This process does not have to be done with a low flow type since it should be executed as normal code by JSFlow. The full implementation of the Monad instance can be seen in Appendix~\ref{app:instances}.
 
 The same principle as with \emph{upg} was used to implement \emph{lprint}, a function that prints the value and the corresponding tag in JSFlow. The function in SwapIFC which communicates with JSFlow was implemented as
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+\begin{verbatim}
     lprintHaste :: Show a => a -> IO ()
     lprintHaste = ffi "lprint" . show
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
 Unfortunately, this solution combined with Haste will produce a corner case in Javascript. Haste will create a function (call it \emph{A} for apply) which in turn "builds" functions by function application. It takes a function (call it \emph{f}) and its arguments (call them \emph{args}) as argument and applies \emph{f} to \emph{args}. If \emph{f} expects more arguments then \emph{A} will return a closure waiting for the rest of the arguments. If there are more arguments in \emph{args} then \emph{f} will be applied with the expected arguments and the result will be applied to the rest of the arguments. Otherwise \emph{f} will be fully applied to \emph{args}. The way this is checked is by checking the length field of \emph{f}. Even though the arguments when declaring a function are optional to define, a function can take up to 255 arguments~\cite{js-function}. In the following example
-\begin{center}
-  \begin{lstlisting}[language=Java]
+\begin{verbatim}
     function g() {
         lprint(arguments[0]);
     }
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
 the function \emph{g} takes an argument but it is not defined in the parameter list. But every function in Javascript have an argument object assiciated to it~\cite{js-arguments}, so calling \emph{g(42);} will indeed work since 42 will be at \emph{arguments[0]}. But checking the length field by calling \emph{g.length} will yield 0. This will cause a problem since the code generated from Haste will check
-\begin{center}
-  \begin{lstlisting}[language=Java]
+\begin{verbatim}
     if(f.arity === undefined) {
         f.arity = f.length;
     }
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
 but if the function \emph{f} does not have variables in the arguments list, \emph{f.length} will be 0.
 
 The way the problem with printing using \emph{lprint} was solved by supplying an anonymous function through the FFI like below:
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+\begin{verbatim}
     lprintHaste :: Show a => a -> IO ()
-    lprintHaste = ffi "(function(x){lprint(x);})" . show
-  \end{lstlisting}
-\end{center}
+    lprintHaste = ffi "(function(x) { lprint(x); })" . show
+\end{verbatim}
 where the anonymous function has a variable in the arguments list. This means that the length of the function will be 1 and the problem explained above will not occur. 
 
 \subsection{Modifications done to Haste}

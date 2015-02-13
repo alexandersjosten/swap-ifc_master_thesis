@@ -8,6 +8,15 @@ As mentioned in Chapter~\ref{chapter:intro}, from a security standpoint JavaScri
 There are several odd features one can use in JavaScript due to the weak dynamic typing. Where a statically typed language (e.g. Java) would give a compile error, the JavaScript code will be run and perhaps succeed but with unexpected results. Figure~\ref{fig:error_java} shows a logical error that is caught at compile time in Java. If the code in Figure~\ref{fig:error_java} would be allowed to run, it would be up to the runtime environment to determine how the code would be interpreted. The same error in JavaScript is shown in Figure~\ref{fig:error_js}. Since JavaScript does not have any static type checking the decision on how to interpret the code will be made at runtime. Instead of failing and raising a runtime error, JavaScript will convert the \textbf{true} value into a number which in this case corresponds to the number \textbf{1}. Hence the addition will be evaluated to \textbf{3}. Situatuations like that, where a clear type error is allowed to propagate and potentially change the state of the application should be considered dangerous and prone to producing bugs.
 
 Another issue with the weak type system in JavaScript can be seen in Figure~\ref{fig:js_comparison}. It is perfectly legal to compare a function with an array in JavaScript. The code in Figure~\ref{fig:js_comparison} will evaluate to \textbf{true}. This can in turn make it very difficult to find potential bugs since JavaScript will try to convert values of different types to the same types and then make the comparison. In e.g. Java, the comparison in Figure~\ref{fig:js_comparison} would not go through the type checker.
+
+In principle, weak typing is when a programmer can mix different types. In some cases it can make sense to allow it, e.g. adding an integer and a float value. It is not only in JavaScript that the examples in Figure~\ref{fig:error_js} and Figure~~\ref{fig:js_comparison} would go through a "compilation phase". Other dynamic languages such as Erlang, Python and Ruby would allow those examples through the compiler. However, Erlang, Python and Ruby all have type checking at runtime and those examples would generate an error at runtime.
+
+One could argue that it is rather silly examples. Who would ever compare a function with an array? The example in Figure~\ref{fig:js_bad_age} shows exactly why weak typing is a bad thing. Assume that a user inputs \emph{Alice} as the name and \emph{42} as the age. The example in Figure~\ref{fig:js_bad_age} would gladly write
+\begin{center}
+  \emph{"Alice is now 42 years old. In 20 years Alice will be 4220 years old!"}
+\end{center}
+to the console. This is because {\tt +} is not only addition, it is also concatenation and if one of the operands is a string, {\tt +} will always convert the second operand to a string and do a concatenation.
+
 \begin{figure}[h]
   \begin{verbatim}
     int a = 2;
@@ -32,6 +41,18 @@ Another issue with the weak type system in JavaScript can be seen in Figure~\ref
   \end{verbatim}
   \caption{Weird comparison in JavaScript}
   \label{fig:js_comparison}
+\end{figure}
+\begin{figure}[h]
+  \begin{verbatim}
+    var name = prompt("What is your name?", "");
+    var age = prompt("What is your age?", "");
+    console.log(
+        name + " is now " + age + " years old. In 20 years " +
+        name + " will be " + (age + 20) + " years old!"
+    );
+  \end{verbatim}
+  \caption{Weak types in JavaScript}
+  \label{fig:js_bad_age}
 \end{figure}
 
 \subsubsection{Attempts to solving the type problem}

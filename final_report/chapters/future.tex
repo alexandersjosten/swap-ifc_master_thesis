@@ -11,7 +11,15 @@ which, when being executed in JSFlow should yield the output
 \begin{verbatim}
     (<>):42_<T>
 \end{verbatim}
-However, the generated code will create an error in JSFlow, stating that "write context \(<\)T\(>\) not below return context \(<>\)". This error is comming from the line {\tt return f;} in the {\tt A} function.
+However, the generated code will create an error in JSFlow, stating that "write context \(<\)T\(>\) not below return context \(<>\)". This error is comming from the line {\tt return f;} in the {\tt A} function. The error is due to the following code
+\begin{verbatim}
+    B(A(new T(function(){
+        return _n/* Haste.Foreign.$wunsafeEval */("upg");
+    }),[[0, 42], _]))
+\end{verbatim}
+which is the code that calls the {\tt A} function with the arguments. Here, the value 42 will be upgraded to a secure value. However, the return context, i.e. where the call to {\tt A} is made, is in a low context. Since it is not allowed to return a high value to a low context, this will produce an error.
+
+Due to this, the most critical future work will be to get a full communication with high values working for JSFlow.
 
 \section{More primitives for the library}
 \label{chapter:future-primitives}

@@ -3,8 +3,18 @@
 No matter how satisfied one is, there is always more work that can be done. In this section, several different suggestions for how to proceed in the future will be presented. The suggestions are not only about how to make the library SwapIFC better, but also other potential work within the area of information flow control.
 
 \section{Full communication for SwapIFC to JSFlow}
+At the moment, code that is generated for flows that are high will not work with JSFlow. The reason for this is due to the runtime function {\tt A} along with what the actual code generation of the Haskell code generates. A simple program for a high flow is
+\begin{verbatim}
+    main = runFlow $ lprint (mkHigh 42)
+\end{verbatim}
+which, when being executed in JSFlow should yield the output
+\begin{verbatim}
+    (<>):42_<T>
+\end{verbatim}
+However, the generated code will create an error in JSFlow, stating that "write context \(<\)T\(>\) not below return context \(<>\)". This error is comming from the line {\tt return f;} in the {\tt A} function.
 
 \section{More primitives for the library}
+\label{chapter:future-primitives}
 A library for a language is never completed until it easily supports the entire language. For SwapIFC, an easy yet time consuming extension would be to add classes and primitives for more standard classes of Haskell. Adding support for handling strings and lists within the {\tt Flow} monad is a easy next step to do. However, adding a class for every standard Haskell class would be tedious, so looking more on if it is possible to have a more general class within the {\tt Flow} monad and easily lift values into it could also be a good next step.
 
 As of now, if a programmer want to use primitives for lists within a {\tt Flow} instance he or she must write the entire function him/herself. This is something one should be able to assume that a library should handle. As of right now, it can be handled using Applicative. A very simple example of adding the primitive {\tt (++)}, which given two lists concatenates them, is

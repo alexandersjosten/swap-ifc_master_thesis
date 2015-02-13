@@ -1,6 +1,6 @@
 \chapter{Testing of the implementation}
 \label{chapter:testing}
-The testing part of the project was done in two different ways. First, randomized tests of SwapIFC were done using QuickCheck~\cite{quickcheck, quickcheck-wiki}. Randomized testing is an area where a lot of research has been made.
+The testing part of the project was done in two different ways. First, randomized tests of SwapIFC were done using QuickCheck~\cite{quickcheck, quickcheck-wiki}.
 \section{"Naïve" testing of the primitives}
 One does not need to write randomized tests in order to test the primitives of the library. All that is needed is to write functions that captures every potential scenario. For the "add" primitive of two flows, the valid flows can be seen in Figure~\ref{fig:validFlow}.
 However, if one attempted any of the following flows that is present in Figure~\ref{fig:invalidFlow}, it would yield a compile time error due to the typeclass {\tt FlowNum} not being defined for those cases. {\tt FlowNum} is only defined to allow information flow like the ones in Figure~\ref{fig:validFlow}. This holds for every primitive in the library.
@@ -38,7 +38,7 @@ testFNumHH' = (.+.)
 \caption{Invalid flows for add primitive}
 \label{fig:invalidFlow}
 \end{figure}
-This is of course not a feasable solution and because of this, unit testing and random testing with QuickCheck was done.
+This is of course not a feasible solution and because of this, unit testing and random testing with QuickCheck was done.
 
 \section{Unit testing}
 A slightly more clever way of testing compared to the naîve testing described above is unit testing. The main principle of the unit testing is to isolate parts of a program or library and show its correctness by conducting tests on the specific part. For SwapIFC, the unit testing consisted of 202 tests which tested every primitive of the library. Given that all 202 tests yielded a correct result, the probability that the primitives behave correctly is considered high. However, unit testing is manual testing and it can be difficult to find edge cases and because of this, random tests using QuickCheck were also conducted.
@@ -96,21 +96,3 @@ Each test function is repeated 100000 times with random values and the source co
   \caption{Pseudo code for the testing of FlowNum in SwapIFC}
   \label{fig:testing_swapifc}
 \end{figure}
-
-\section{Testing of the code generation}
-aosifjasofijasfoij
-\begin{figure}[h]
-  \begin{algorithm}[H]
-    \caption{Testing JSFlow compatibility algorithm}
-    \begin{algorithmic}
-      \If {$c == 42$}
-      \State $a\gets 10$
-      \EndIf
-    \end{algorithmic}
-  \end{algorithm}
-  \caption{Pseudo code for the testing of JSFlow}
-  \label{fig:testing_jsflow}
-\end{figure}
-asodijasodijsd
-
-\section{Argument for correctness of the library}

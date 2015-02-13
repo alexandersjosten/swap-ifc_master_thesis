@@ -1,3 +1,19 @@
 \chapter{Structure of SwapIFC library}
 \label{app:library_structure}
-aspfijasofijasofiasjfoiasjfasoifj
+The SwapIFC library is divided into two different code bases - the trusted code base and the non-trusted code base. Within the trusted code base, all the unsafe operations and declassification and upgrading of values are permitted and exposed. In the non-trusted code base, the only exposed modules are the module defining {\tt Flow} (\emph{SwapIFC.Types}) and parts of the module defining {\tt mkHigh, mkLow} (\emph{SwapIFC.Auxiliary}).
+
+The structure for the trusted code base is
+\begin{verbatim}
+    SwapIFC.Trusted:
+        exposed modules:
+            SwapIFC.Unsafe
+            SwapIFC.Auxiliary
+            SwapIFC.Types
+\end{verbatim}
+whereas the structure for the non-trusted code base is
+\begin{verbatim}
+    SwapIFC.Trusted:
+        exposed modules:
+            SwapIFC.Auxiliary (mkHigh, mkLow, lprint)
+            SwapIFC.Types
+\end{verbatim}

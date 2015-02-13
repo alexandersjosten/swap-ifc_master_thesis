@@ -1,4 +1,5 @@
 \chapter{Future work}
+\label{chapter:future}
 No matter how satisfied one is, there is always more work that can be done. In this section, several different suggestions for how to proceed in the future will be presented. The suggestions are not only about how to make the library SwapIFC better, but also other potential work within the area of information flow control.
 
 \section{Full communication for SwapIFC to JSFlow}
@@ -14,6 +15,7 @@ As of now, if a programmer want to use primitives for lists within a {\tt Flow} 
 However, it has a major drawback. Since it uses Applicative and there are two different Applicative implementations (one for {\tt High} and one for {\tt Low}), both flows ({\tt f1} and {\tt f2}) must have the same tag. So as of right now, a programmer who uses SwapIFC must either implemement the missing primitives him/herself or accept that all operands must be of the same type (in this case the same tag).
 
 \section{Add support for side effects in the library}
+\label{chapter:future-side-effects}
 As mentioned in Chapter~\ref{chapter:side-effects-library}, SwapIFC currently has no handling of side effects. A natural extension is to add support for side effects. This can be achieved by creating a {\tt newtype FlowRef} that contains an {\tt IORef}, i.e. a mutable variable in the IO monad~\cite{ioref}. A {\tt FlowRef} can then be used to enforce that every operation executed on the {\tt FlowRef} will share the same tag.
 \begin{verbatim}
     -- newtype for IORefs within Flow

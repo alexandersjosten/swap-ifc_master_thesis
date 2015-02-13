@@ -34,14 +34,7 @@ Another issue with the weak type system in JavaScript can be seen in Figure~\ref
   \label{fig:js_comparison}
 \end{figure}
 
-\subsection{Sensitive information in the browser}
-The browser has access to several different types of sensitive information and can be used by an attacker to get the sensitive information. JavaScript can gain access to e.g. cookies, send HTTP requests and make arbitrary DOM modifications. If untrusted JavaScript is executed in a victim's browser, the attacker can, among other things, perform the following attacks:
-\begin{itemize}
-  \item \textbf{Cookie theft}, where the attacker can gain access to the victim's cookies that are associated with the current website.
-  \item \textbf{Keylogging}, where the attacker can create and register a keyboard event listener and send the keystrokes to the attacker's own server in order to potentially record passwords, credit card information etc.
-  \item \textbf{Phishing}, where the attacker can insert fake forms by manipulating the DOM and fool the user to submit sensitive information which will be redirected to the attacker.
-\end{itemize}
-\subsection{Examples of attempts to solutions}
+\subsubsection{Attempts to solving the type problem}
 There have been several attempts of providing a more secure type system to JavaScript, everything from creating a statically typed language that compiles to JavaScript to a compiler from an already existing programming language and compile it to JavaScript to a static type checker. Examples of attempted soultions are
 \begin{itemize}
   \item \textbf{TypeScript}~\cite{typescript}, a typed superset of JavaScript that compiles to plain JavaScript.
@@ -49,7 +42,15 @@ There have been several attempts of providing a more secure type system to JavaS
   \item \textbf{GHCJS}~\cite{ghcjs} and \textbf{Haste}~\cite{haste-lang,haste-symposium}, which compiles from Haskell, a statically typed, high-level functional programming language~\cite{haskell}, to JavaScript.
 \end{itemize}
 
-When looking at the other major flaw, namely that JavaScript has access to sensitive information that is stored within the browser, the current solution as of now is to sandbox the script and run it in a secure environment. There are mainly three ways of doing this.
+\subsection{Sensitive information in the browser}
+The browser has access to several different types of sensitive information and can be used by an attacker to get the sensitive information. JavaScript can gain access to e.g. cookies, send HTTP requests and make arbitrary DOM modifications. If untrusted JavaScript is executed in a victim's browser, the attacker can, among other things, perform the following attacks:
+\begin{itemize}
+  \item \textbf{Cookie theft}, where the attacker can gain access to the victim's cookies that are associated with the current website.
+  \item \textbf{Keylogging}, where the attacker can create and register a keyboard event listener and send the keystrokes to the attacker's own server in order to potentially record passwords, credit card information etc.
+  \item \textbf{Phishing}, where the attacker can insert fake forms by manipulating the DOM and fool the user to submit sensitive information which will be redirected to the attacker.
+\end{itemize}
+\subsubsection{Attempts to solving the information problem}
+The current solution to secure the sensitive information JavaScript has access to as of now is to sandbox the script and run it in a secure environment. There are mainly three ways of doing this.
 \begin{itemize}
   \item Wrap the script inside a call to with and pass a faked window object and execute the code with eval.
   \item Use an iframe and set the sandbox attribute to either not allow scripts to run or have it be run within that iframe only. Unfortunately, as explained in~\cite{js_in_js}, iframes have some issues as well.
@@ -60,7 +61,7 @@ When looking at the other major flaw, namely that JavaScript has access to sensi
     \end{itemize}
 \end{itemize}
 \section{Haste}
-Haste (HASkell To Ecmascript compiler) is a compiler that compiles the high-level language Haskell to JavaScript. The Haste compiler is plugged in to the compilation process from GHC, the Glasgow Haskell Compiler. As can be seen in Figure~\ref{fig:system}, Haste starts its compilation process after GHC has done some code optimization. From the optimized code from GHC, Haste will create an AST, Abstract Syntax Tree, for JavaScript. The AST will then be optimized and after the optimization process in Haste is done the actual JavaScript code will be generated.
+Haste (HASkell To Ecmascript compiler) is a compiler that compiles the high-level language Haskell to JavaScript. The Haste compiler is plugged into the compilation process from GHC, the Glasgow Haskell Compiler. As can be seen in Figure~\ref{fig:system}, Haste starts its compilation process after GHC has done some code optimization. From the optimized code from GHC, Haste will create an AST, Abstract Syntax Tree, for JavaScript. The AST will then be optimized and after the optimization process in Haste is done the actual JavaScript code will be generated.
 \begin{figure}[h]
   \begin{tabular}{|c|c|c|}
     \hline
@@ -85,12 +86,12 @@ When compiling the Haskell source code with Haste, the compilation process will 
 \section{JSFlow}
 JSFlow is an interpreter written in JavaScript that dynamically checks the JavaScript code at runtime to ensure information flow security. Currently, JSFlow supports full information flow control for ECMA-262 v5 apart from strict mode and JSON.
 
-Within information flow security, there are two types of flow that must be checked - explicit flow and implicit flow. Even though there are several different ways an attacker can gain information about a system (e.g. via timing attacks), only explicit and implicit flows for computations are considered. An implementation that guarantees that timing attacks are not able to succeed will not be given for this project.
+Within information flow security, there are two types of flow that must be checked - explicit flow and implicit flow. Even though there are several different ways an attacker can gain information about a system (e.g. via timing attacks), only explicit and implicit flows for computations are considered. JSFlow does not provide security for e.g. timing attacks and due to this, handling timing attacks will be outside of the scope for this thesis.
 \subsection{Explicit flow}
 With explicit flow, one means when a data in a \emph{high} context leaks information to a \emph{low} context explicitly. An example can be seen in Figure~\ref{fig:expflow} where the value of the high variable \emph{h} is leaked to the low variable \emph{l}. Obviously this should be illegal when information flow security is applied and explicit flows are not difficult to find when dynamically checking the code. When data is written to a variable, one simply must keep track of the context of the variable and the context of the data. If the variable is in low context and the data is in high context an error should be produced and execution of the JavaScript code should be stopped. All other scenarios (high variable with high data, high variable with low data and low variable with low data) are allowed.
 \subsection{Implicit flow}
 \label{chapter:implicit_flow}
-Implicit flows occurs when e.g. a language's control structure is used to leak information. Figure~\ref{fig:impflow} shows an example of an implicit flow. The variable \emph{l} will get the value 1 if and only if the variable \emph{h} is an odd number. Otherwise \emph{l} will have the value 0. A dynamic system that will handle implicit flows must associate a security context with the control flow~\cite{jsflow-csf12}. In Figure~\ref{fig:impflow}, the body of the if statement should be executed in a secure context and therefore the variable \emph{l} must be a secure variable in order for the flow to be valid.
+Implicit flows occurs when e.g. a language's control structure is used in combination with side effects to leak information. Figure~\ref{fig:impflow} shows an example of an implicit flow. The variable \emph{l} will get the value 1 if and only if the variable \emph{h} is an odd number. Otherwise \emph{l} will have the value 0. A dynamic system that will handle implicit flows must associate a security context with the control flow~\cite{jsflow-csf12}. In Figure~\ref{fig:impflow}, the body of the if statement should be executed in a secure context and therefore the variable \emph{l} must be a secure variable in order for the flow to be valid.
 
 \begin{figure}[h]
   \captionsetup[subfigure]{singlelinecheck=off,justification=raggedright}
@@ -135,24 +136,25 @@ When creating a web application in JavaScript that JSFlow should be able to chec
 The {\tt upg} function will take a computation (in Figure~\ref{fig:upg} the compuation is simply the number 42) and bind that value to the assigned variable (in Figure~\ref{fig:upg} the variable {\tt h}) and put the variable in a high context.
 
 \subsection{Flows in a pure functional language}
-Even though there are two different flows in JavaScript (implicit and explicit flows), there is only one type of flow in a pure functional programming language like Haskell, an explicit flow~\cite{seclib}. As described in Chapter~\ref{chapter:implicit_flow}, an implicit flow depends on control structures in order to leak information. However, even though a pure functional programming language like Haskell contains control structures, they are still interpreted as a regular function. This means that a function like
+Even though there are two different flows in JavaScript (implicit and explicit flows), there is only one type of flow in a pure functional programming language like Haskell, an explicit flow~\cite{seclib}. As described in Chapter~\ref{chapter:implicit_flow}, an implicit flow depends on control structures in combination with side effects in order to leak information. However, even though a pure functional programming language like Haskell contains control structures, a pure function does not contain side effects. A control structure like an if-statement can be interpreted as a regular function returning a constant value. This means that a function like
 \begin{verbatim}
-    f :: Int -> Int
+    f :: HInt -> LInt
     f x = if x `mod` 2 == 0
               then 42
             else -42
 \end{verbatim}
-will look like an implicit flow but is in fact an explicit flow. This is because an if-then-else can be rewritten as a regular function~\cite{if-then-else}
+will look like an implicit flow but is in fact an explicit flow. Note that, in this case {\tt HInt} stands for a \emph{High Int} and {\tt LInt} stands for a \emph{Low Int}. An if-then-else can be rewritten as a regular function~\cite{if-then-else}
 \begin{verbatim}
     myIf :: Bool -> a -> a -> a
     myIf True  b1 _ = b1
     myIf False _ b2 = b2
 \end{verbatim}
-where b1 and b2 are the different branches. The different branches are of type \textbf{a}, which in this case can be any arbitrary expression. Rewriting the function \textbf{f} using \textbf{myIf} can be done as follows:
+where {\tt b1} and {\tt b2} are the different branches. The different branches are of type {\tt a}, which in this case can be any arbitrary expression. Rewriting the function {\tt f} using {\tt myIf} can be done as follows:
 \begin{verbatim}
-    f :: Int -> Int
+    f :: HInt -> LInt
     f x = myIf (x `mod` 2 == 0) 42 (-42)
 \end{verbatim}
+where a constant value, either {\tt 42} or {\tt -42}, is returned. Since there are no side effects in a pure function like {\tt f}, there can be no implicit flows. Every flow will be explicit, which in turn makes it easier to create a structure in the type system that keeps track of the flow.
 
 \section{Non-interference}
 The principles of non-interference were introduced by Goguen and Meseguer in 1982~\cite{non-interference-goguen-meseguer} who defined non-interference to be
@@ -208,6 +210,16 @@ Seclib is a light-weight library for information flow control in Haskell~\cite{s
 \subsection{LMonad}
 LMonad~\cite{lmonad} is a library tailored to provide information flow control for web applications written in Yesod, a framework for creating web applications in Haskell~\cite{yesod}. It is a generalization of LIO and provides a Monad Transformer~\cite{monad-transformer}, which in theory means it can be "wrapped around" any monad. Programmers can define their own information flow control policies and after defining them, LMonad guarantees that database interacions follow the policies.
 \subsection{RDR}
-RDR is a monad which builds on the DLM (Decentralized Label Model) to provide information flow control. The purpose of RDR is to extend restricted delegation and revocation to information flow control. The main principle is to allow information flow to a predefined chain of principals, but keeping a right to revoke it at any time. The RDR monad is built by using a Reader monad over the IO monad. One of the ideas of RDR is to see restricted delegation as declassification and protected values should only be allowed to be read by using a valid principal and due to the DLM, mutually-distrusting principals should be allowed to express individual confidentiality and integrity policies~\cite{rdr}.
+RDR is a monad which builds on the DLM (Decentralized Label Model) to provide information flow control. DLM allows declassification in a decentralized way~\cite{dlm} and consists of four important parts~\cite{dlm-site}:
+\begin{itemize}
+  \item \emph{Principles}, which is an entity with power to change and observe certain aspects of the system. A principle \emph{p} can delegate authority to a principle \emph{q} and the actions taken by \emph{q} is implicitly assumed to be authorized by \emph{p}. The principals can have different security policies which makes the system modular.
+  \item \emph{Reader policy}, which allows the owner of the policy to specify which principals who are allowed to read a given piece of information. This is a \emph{confidentiality policy}.
+  \item \emph{Writer policy}, which allows the owner of the policy to specify which principals who may have influenced the value of a given piece of information. This is an \emph{integrity policy}.
+  \item \emph{Labels}, which is a pair of a confidentiality policy and an integrity policy. It is the labels that are used to anotate programs.
+\end{itemize}
+
+The purpose of RDR is to extend restricted delegation and revocation to information flow control. The main principle is to allow information flow to a predefined chain of principals, but keeping a right to revoke it at any time. The RDR monad is built by using a Reader monad over the IO monad. One of the ideas of RDR is to see restricted delegation as declassification and protected values should only be allowed to be read by using a valid principal and due to the DLM, mutually-distrusting principals should be allowed to express individual confidentiality and integrity policies~\cite{rdr}.
 \subsection{Why another library?}
-As explained above, there are already working libraries for information flow control so why would another library be needed? Even though the current libraries are good, they lack one part - integration with another system. The library created for this thesis is supposed to close the gap between static control for information flow control and already created tools for dynamic check of information flow control (JSFlow) and created tools for securing JavaScript from the viewpoint of a type system. The created library will be able to be run in GHC if one wants to create a system strictly for Haskell but it should also be able to run the code with Haste and as a result get produced JavaScript code which is tagged so JSFlow can dynamically track the information flow.
+As explained above, there are already working libraries for information flow control so why would another library be needed? Even though the current libraries are good, they lack one part - integration with a dynamic system. The library will help close the gap between static control for information flow control and already created tools for dynamic check of information flow control (JSFlow) and created tools for securing JavaScript from the viewpoint of a type system (Haste).
+
+% The created library will be able to be run in GHC if one wants to create a system strictly for Haskell but it should also be able to run the code with Haste and as a result get produced JavaScript code which is tagged so JSFlow can dynamically track the information flow.  <-- För abstract..? Eller kanske introduction?

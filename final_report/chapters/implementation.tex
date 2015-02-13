@@ -18,14 +18,14 @@ The Flow type is defined as a newtype in Haskell, i.e. a definition that can onl
 \begin{verbatim}
     newtype Flow tag a = Flow (IO a)
 \end{verbatim}
-and even though it has a tag in the definition (the left hand side), it does not contain a tag on the right hand side. Instead, the tag is implemented as a phantom type~\cite{haskell_phantom} which means that it can be checked by the type checker but not looked at by the user via e.g. pattern-matching. This means that from a user standpoint, the Flow type is simply a container for IO actions and the rules for the information flow control rules are implemented in the type checker alone. An example of how to add five to a Flow of High value is
+and even though it has a tag in the definition (the left hand side), it does not contain a tag on the right hand side. Instead, the tag is implemented as a phantom type~\cite{haskell_phantom}: a type which does not appear on the right hand side of a type definition and so has no representation on the value level. A phantom type can be checked by the type checker but it can not be used by the user via e.g. pattern-matching. This means that from a value standpoint, the Flow type is simply a container for IO actions and the rules for the information flow control rules are implemented in the type checker alone. However, a from a user standpoint, the Flow type is a taged computation. An example of how to add five to a Flow of High value is
 \begin{verbatim}
     addFiveFlow :: Flow High Int -> Flow High Int
     addFiveFlow f = do
       let b = mkHigh 5
       f .+. b
 \end{verbatim}
-where a new Flow (the variable \emph{b}) is created and added with the given Flow \emph{f}.
+where a new Flow (the variable {\tt b}) is created and added with the given Flow {\tt f}.
 
 \subsection{Monad instance}
 Two separate monad instances was created in order to be able to handle potential code generation towards Haste, one for High and one for Low flow. If Haste was the compiler, then the High flow needed to be compiled with a call to the \emph{upg} function in JSFlow.
@@ -45,7 +45,7 @@ The first monadic law is easy to prove. It can be done in two steps:
 \end{alltt}
 where the transformation on line 1 is due to the definition of return in the library and the transformation on line 2 is due to the definition of bind in the library.
 
-The second rule is just as easily shown.
+The second law is just as easily shown.
 \begin{alltt}
   1. m >>= return = Flow (IO a) >>= return
   2.              = return a
@@ -53,23 +53,23 @@ The second rule is just as easily shown.
 \end{alltt}
 The transformation between lines 1 and 2 is due to the definition of bind and the transformation on line 3 is due to the definition of return.
 
-To show that the third law is satisfied, it is enough to show that m \(>>\)= (\(\lambda\)x -\(>\) k x \(>>\)= h) and (m \(>>\)= k) \(>>\)= h would evaluate to an equal value. m \(>>\)= (\(\lambda\)x -\(>\) k x \(>>\)= h) is evaluated as:
+To show that the third law is satisfied, it is enough to show that the left hand side and the right hand side evaluate to the same value. The left hand side is evaluated as:
 \begin{alltt}
   1. m >>= (\(\lambda\)x -> k x >>= h) = Flow (IO a) >>= (\(\lambda\)x -> k x >>= h)
-  2.                                   = (\(\lambda\)x -> k x >>= h) a
-  3.                                   = k a >>= h
+  2.                         = (\(\lambda\)x -> k x >>= h) a
+  3.                         = k a >>= h
 \end{alltt}
-where the transformation between lines 1 and 2 is due to the definition of bind. It is simple lambda-calculus to apply the value \emph{a} to the function (\(\lambda\)x -\(>\) k x \(>>\)= h) on line two and it is through this the result on line 3 is derived.
+where the transformation between lines 1 and 2 is due to the definition of bind. It is simple lambda-calculus to apply the value {\tt a} to the function {\tt \(\lambda\)x -> k x >>= h} on line two and it is through this the result on line 3 is derived.
 \newline
 \newline
-Similarly, deriving (m \(>>\)= k) \(>>\)= h will yield
+Similarly, deriving the right hand side will yield
 \begin{alltt}
   1. (m >>= k) >>= h = (Flow (IO a) >>= k) >>= h
   2.                 = k a >>= h
 \end{alltt}
-where the transformation between lines 1 and 2 is due to the definition of bind. As can be seen, both m \(>>\)= (\(\lambda\)x -\(>\) k x \(>>\)= h) and (m \(>>\)= k) \(>>\)= h yield the same result and are therefor equal.
+where the transformation between lines 1 and 2 is due to the definition of bind. As can be seen, the left hand side yields the same result as the right hand side and the two sides are therefore equal.
 
-Due to the type signature of bind, \emph{m} must be of type \emph{Monad m =\(>\) m a}, \emph{k x} must be a monadic value (which indicates that the function \emph{k} must have the type signature (Monad m =\(>\) a -\(>\) m b)) and \emph{h} must have type (Monad m =\(>\) b -\(>\) m c). Due to this, it should be allowed to have (m \(>>\)= k) since that would mean (Monad m =\(>\) m a \(>>\)= (a -\(>\) m b)) which would type check. The result of (m \(>>\)= k) is (m b) and since \emph{h} has type signature (Monad m =\(>\) b -\(>\) m c), it is valid to have (m \(>>\)= k) \(>>\)= h.
+At first glance, the third law can be non-intuitive. However, due to the type signature of bind, {\tt m} must be of type {\tt Monad m => m a}, {\tt k x} must be a monadic value (which indicates that the function {\tt k} must have the type signature {\tt (Monad m => a -> m b)} and {\tt h} must have type {\tt (Monad m => b -> m c)}. Due to this, it should be allowed to have {\tt m >>= k} since that would mean {\tt (Monad m => m a >>= (a -> m b))} which would type check. The result of {\tt m >>= k} is of type {\tt Monad m => m b} and since {\tt h} has type signature {\tt (Monad m => b -> m c)}, it is valid to have {\tt (m >>= k) >>= h}.
 \subsection{Functor instance}
 In order for the Flow type to be an instance of Functor, the function \emph{fmap} must be implemented. When defining a functor, one can see it as transforming a pure function into a monadic function (if the functor is also a monad). If a type is an instance of both the Monad and Functor classes, then the implementation of \emph{fmap} must obey the following law:
 \begin{verbatim}
@@ -182,7 +182,7 @@ where t1, t2 and t3 are type variables. As can be seen, given two tags, t1 and t
 The instance definitions give the rules for the Haskell type system which types the type variables can have and how to derive the resulting type. As can be seen, the only way for a {\tt FlowBool} to produce something of low value is when the two type variables t1 and t2 are low. As soon as either t1 or t2 or both are high, the result will be high. This holds for all classes in the library.
 
 \subsection{Declassification of flows}
-When looking at the declassification dimensions mentioned in Chapter~\ref{chapter:declassification}, the library only implements the \textbf{who} dimension. The only person who can declassify information is a person who has access to the \textbf{trusted} code base (see Appendix~\ref{app:library_structure}). There is no limit as to \textbf{what} data that can be declassified other then the fact that it must be data that is tagged as {\tt High}. There is also no limit as to \textbf{when} or \textbf{where} the person can declassify data.
+When looking at the declassification dimensions mentioned in Chapter~\ref{chapter:declassification}, the library only implements the \textbf{who} dimension. The only person who can declassify information is a person who has access to the \textbf{trusted} code base (see Appendix~\ref{app:library_structure}). There is no limit as to \textbf{what} data that can be declassified other than the fact that it must be data that is tagged as {\tt High}. There is also no limit as to \textbf{when} or \textbf{where} the person can declassify data.
 
 There is also no way to declassify data without using the declassification function in the trusted code base. One could imagine a person with malicious intent tries to use {\tt >>=} (the bind-operator) to downgrade a {\tt Flow} from {\tt High} to {\tt Low}. The {\tt >>=} operator has the following type signature:
 \begin{verbatim}

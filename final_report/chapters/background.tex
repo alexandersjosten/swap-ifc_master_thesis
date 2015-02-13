@@ -1,12 +1,13 @@
 \chapter{Background}
-As mentioned in Chapter~\ref{chapter:intro}, JavaScript has several shortcommings. Two of the tools that will be used in this project are Haste~\cite{haste-lang} and JSFlow~\cite{jsflow,jsflow-csf12,jsflow-sac14}.
+As mentioned in Chapter~\ref{chapter:intro}, JavaScript has several shortcomings. This chapter will explain those shortcomings in more detail. It will also introduce two of the tools that will be used in this project; Haste~\cite{haste-lang} and JSFlow~\cite{jsflow,jsflow-csf12,jsflow-sac14}. Finally, some terminology and related work will be presented.
+
 \section{Problems with JavaScript - part deux}
 As mentioned in Chapter~\ref{chapter:intro}, from a security standpoint JavaScript suffers from weak dynamic typing and having access to sensitive information in the browser.
 \subsection{Weak dynamic typing}
 \label{chapter:weak-dynamic-typing}
 There are several odd features one can use in JavaScript due to the weak dynamic typing. Where a statically typed language (e.g. Java) would give a compile error, the JavaScript code will be run and perhaps succeed but with unexpected results. Figure~\ref{fig:error_java} shows a logical error that is caught at compile time in Java. If the code in Figure~\ref{fig:error_java} would be allowed to run, it would be up to the runtime environment to determine how the code would be interpreted. The same error in JavaScript i shown in Figure~\ref{fig:error_js}. Since JavaScript does not have any static type checking the decision on how to interpret the code will be made at runtime. Instead of failing and raising a runtime error, JavaScript will convert the \textbf{true} value into a number which in this case corresponds to the number \textbf{1}. Hence the addition will be evaluated to \textbf{3}. Situatuations like that, where a clear type error is allowed to propagate and potentially change the state of the application should be considered dangerous and prone to producing bugs.
 
-Another issue with the weak type system in JavaScript can be seen in Figure~\ref{fig:js_comparison}. It is perfectly legal to compare a function with an array in JavaScript. The code in Figure~\ref{fig:js_comparison} will evaluate to \textbf{true}. This can in turn make it very difficult to find potential bugs since JavaScript will try and convert values of different types to the same types and then make the comparison. In e.g. Java, the comparison in Figure~\ref{fig:js_comparison} would not go through the type checker.
+Another issue with the weak type system in JavaScript can be seen in Figure~\ref{fig:js_comparison}. It is perfectly legal to compare a function with an array in JavaScript. The code in Figure~\ref{fig:js_comparison} will evaluate to \textbf{true}. This can in turn make it very difficult to find potential bugs since JavaScript will try to convert values of different types to the same types and then make the comparison. In e.g. Java, the comparison in Figure~\ref{fig:js_comparison} would not go through the type checker.
 \begin{figure}[h]
   \begin{verbatim}
     int a = 2;
@@ -34,7 +35,7 @@ Another issue with the weak type system in JavaScript can be seen in Figure~\ref
 \end{figure}
 
 \subsection{Sensitive information in the browser}
-The browser has access to several different types of sensitive information and can be used by an attacker to get the sensitive information. JavaScript can gain access to e.g. cookies, send HTTP requests and make arbitrary DOM modifications. If untrusted JavaScript is executed in a victims browser, the attacker can, among other things, perform the following attacks:
+The browser has access to several different types of sensitive information and can be used by an attacker to get the sensitive information. JavaScript can gain access to e.g. cookies, send HTTP requests and make arbitrary DOM modifications. If untrusted JavaScript is executed in a victim's browser, the attacker can, among other things, perform the following attacks:
 \begin{itemize}
   \item \textbf{Cookie theft}, where the attacker can gain access to the victim's cookies that are associated with the current website.
   \item \textbf{Keylogging}, where the attacker can create and register a keyboard event listener and send the keystrokes to the attacker's own server in order to potentially record passwords, credit card information etc.
@@ -59,7 +60,7 @@ When looking at the other major flaw, namely that JavaScript has access to sensi
     \end{itemize}
 \end{itemize}
 \section{Haste}
-Haste (HASkell To Ecmascript compiler) is a compiler that compiles the high-level language Haskell to JavaScript. The Haste compiler is plugged in to the compilation process from GHC, the Glasgow Haskell Compiler. As can be seen in Figure~\ref{fig:system}, Haste starts its compiling process after GHC has done som code optimization. From the optimized code from GHC, Haste will create an AST, Abstract Syntax Tree, for JavaScript. The AST will then be optimized and after the optimization process in Haste is done the actual JavaScript code will be generated.
+Haste (HASkell To Ecmascript compiler) is a compiler that compiles the high-level language Haskell to JavaScript. The Haste compiler is plugged in to the compilation process from GHC, the Glasgow Haskell Compiler. As can be seen in Figure~\ref{fig:system}, Haste starts its compilation process after GHC has done some code optimization. From the optimized code from GHC, Haste will create an AST, Abstract Syntax Tree, for JavaScript. The AST will then be optimized and after the optimization process in Haste is done the actual JavaScript code will be generated.
 \begin{figure}[h]
   \begin{tabular}{|c|c|c|}
     \hline
@@ -79,17 +80,17 @@ Haste (HASkell To Ecmascript compiler) is a compiler that compiles the high-leve
   \label{fig:system}
 \end{figure}
 
-When compiling the Haskell source code with Haste, the compilation process will result in one binary file for the server and source code in JavaScript for the client~\cite{haste-symposium}.
+When compiling the Haskell source code with Haste, the compilation process will result in a JavaScript file. If Haste.App is used, the compilation process will create the source code for the client in JavaScript and a server binary~\cite{haste-symposium}.
 
 \section{JSFlow}
-JSFlow is an interpreter written in JavaScript that dynamically checks the JavaScript code at runtime to ensure information flow security. Currently, JSFlow supports full information flow control for ecma-262 v5 apart from strict mode. Also, the publicly available version of JSON is not supported.
+JSFlow is an interpreter written in JavaScript that dynamically checks the JavaScript code at runtime to ensure information flow security. Currently, JSFlow supports full information flow control for ECMA-262 v5 apart from strict mode and JSON.
 
-Within information flow security, there are two types of flow that must be checked - explicit flow and implicit flow. Even though there are several different ways an attacker can gain information about a system (e.g. via timing attacks), only explicit and implicit flows for computations will be considered. An implementation that guarantees that timing attacks are not able to succeed will not be given for this project.
+Within information flow security, there are two types of flow that must be checked - explicit flow and implicit flow. Even though there are several different ways an attacker can gain information about a system (e.g. via timing attacks), only explicit and implicit flows for computations are considered. An implementation that guarantees that timing attacks are not able to succeed will not be given for this project.
 \subsection{Explicit flow}
 With explicit flow, one means when a data in a \emph{high} context leaks information to a \emph{low} context explicitly. An example can be seen in Figure~\ref{fig:expflow} where the value of the high variable \emph{h} is leaked to the low variable \emph{l}. Obviously this should be illegal when information flow security is applied and explicit flows are not difficult to find when dynamically checking the code. When data is written to a variable, one simply must keep track of the context of the variable and the context of the data. If the variable is in low context and the data is in high context an error should be produced and execution of the JavaScript code should be stopped. All other scenarios (high variable with high data, high variable with low data and low variable with low data) are allowed.
 \subsection{Implicit flow}
 \label{chapter:implicit_flow}
-Implicit flows occurs when e.g. a language's control structure is used to leak information. Figure~\ref{fig:impflow} shows an example of an implicit flow. The variable \emph{l} will get the value 1 if and only if the variable \emph{h} is an odd number. Otherwise \emph{l} will have the value 0. A dynamic system that will handle implicit flows must associate a security context with the control flow~\cite{jsflow-csf12}. In Figure~\ref{fig:impflow}, the body of the if statement should be executed in a secure context and therefor the variable \emph{l} must be a secure variable in order for the flow to be valid.
+Implicit flows occurs when e.g. a language's control structure is used to leak information. Figure~\ref{fig:impflow} shows an example of an implicit flow. The variable \emph{l} will get the value 1 if and only if the variable \emph{h} is an odd number. Otherwise \emph{l} will have the value 0. A dynamic system that will handle implicit flows must associate a security context with the control flow~\cite{jsflow-csf12}. In Figure~\ref{fig:impflow}, the body of the if statement should be executed in a secure context and therefore the variable \emph{l} must be a secure variable in order for the flow to be valid.
 
 \begin{figure}[h]
   \captionsetup[subfigure]{singlelinecheck=off,justification=raggedright}
@@ -113,8 +114,8 @@ Implicit flows occurs when e.g. a language's control structure is used to leak i
   \caption{Implicit and explicit flow}
 \end{figure}
 
-\subsection{Example of coding towards JSFlow}
-When creating a web application in JavaScript that JSFlow should be able to check, there is only one function that the programmer must know about - the \emph{upg} function. The function upg is used when lifting a computation in to a high context. In Figure~\ref{fig:upg}, the variable \emph{h} is lifted in to a high context by calling upg on the data to be stored to \emph{h}. Due to the call to upg, the variable h will be a high variable containing the number 42. As can be seen with the variables \emph{l}, which is a low variable, and \emph{t}, which is a high variable, the default level for a compuation is low unless JSFlow infers that a variable \textbf{must} be high due to part of the compuation being high.
+\subsection{Example of coding for JSFlow}
+When creating a web application in JavaScript that JSFlow should be able to check, there is only one function that the programmer must know about - the \emph{upg} function. The function upg is used when lifting a computation into a high context. In Figure~\ref{fig:upg}, the variable \emph{h} is lifted into a high context by calling upg on the data to be stored to \emph{h}. Due to the call to upg, the variable h will be a high variable containing the number 42. As can be seen with the variables \emph{l}, which is a low variable, and \emph{t}, which is a high variable, the default level for a compuation is low unless JSFlow infers that a variable \textbf{must} be high due to part of the compuation being high.
 
 \begin{figure}[h]
   \begin{verbatim}
@@ -131,7 +132,7 @@ When creating a web application in JavaScript that JSFlow should be able to chec
   \caption{Creating high and low variables in JavaScript with JSFlow}
   \label{fig:upg}
 \end{figure}
-The upg function will take a computation (in Figure~\ref{fig:upg} the compuation is simply the number 42) and bind that value to the assigned variable (in Figure~\ref{fig:upg} the variable h) and put the variable in a high context.
+The {\tt upg} function will take a computation (in Figure~\ref{fig:upg} the compuation is simply the number 42) and bind that value to the assigned variable (in Figure~\ref{fig:upg} the variable {\tt h}) and put the variable in a high context.
 
 \subsection{Flows in a pure functional language}
 Even though there are two different flows in JavaScript (implicit and explicit flows), there is only one type of flow in a pure functional programming language like Haskell, an explicit flow~\cite{seclib}. As described in Chapter~\ref{chapter:implicit_flow}, an implicit flow depends on control structures in order to leak information. However, even though a pure functional programming language like Haskell contains control structures, they are still interpreted as a regular function. This means that a function like
@@ -159,30 +160,30 @@ The principles of non-interference were introduced by Goguen and Meseguer in 198
 \begin{center}
   \emph{one group of users, using a certain\\set of commands, is noninterfering\\with another group of users if what\\the first group does with those\\commands has no effect on what the\\second group of users can see.}
 \end{center}
-When talking about non-interference with regards to information flow control, one means a property that states that the public outcome does not depend on any private input.
+When talking about non-interference with regards to information flow control, one means a property that states that the public outcome does not depend on any private input. An attacker should not be able to distinguish between two computations from their outputs if the computations only vary in the secret input.
 
-As an example of non-interference, assume the following function where something of type \textbf{Char} is a high value and something of type \textbf{Int} is of low value:
+As an example of non-interference, assume the following function where something of type \textbf{Char} is of high value and something of type \textbf{Int} is of low value:
 \begin{verbatim}
     fOk :: (Char, Int) -> (Char, Int)
     fOk (c, i) = (chr (ord c + i), i + 42)
 \end{verbatim}
-The function \textbf{fOk} preserves the confidentiality since it does not leak any valuable information about the value \textbf{c}. It is said to be \emph{non-interfered} since the public result (the Int value) is independent of the value of \textbf{c}. If the function instead was defined as
+The function {\tt fOk} preserves confidentiality since it does not leak any valuable information about the value {\tt c}. In this case, preserving the confidentiality of {\tt c} means that no information of {\tt c} is leaked. It is said to be \emph{non-interfered} since the public result (the Int value) is independent of the value of {\tt c}. If the function instead was defined as
 \begin{verbatim}
     fBad1 :: (Char, Int) -> (Char, Int)
     fBad1 (c, i) = (c, ord c)
 \end{verbatim}
-it would not be non-interfered because the confidentiality is broken. Information about \textbf{c} is leaked through the low Int and the corresponding decimal value of the ASCII number of \textbf{c} is returned as the second value of the tuple.
+it would not be non-interfered because the confidentiality is broken. Information about {\tt c} is leaked through the low Int and the corresponding decimal value of the ASCII number of {\tt c} is returned as the second value of the tuple.
 
-Unfortunately, information leakage is seldom as explicit as in the fBad1 function. An attacker might be clever and attempt
+Unfortunately, information leakage is seldom as explicit as in the {\tt fBad1} function. An attacker might be clever and attempt
 \begin{verbatim}
     fBad2 :: (Char, Int) -> (Char, Int)
     fBad2 (c, i) = (c, if ord c > 31 then 1 else 0)
 \end{verbatim}
-which would give information about whether or not the variable \textbf{c} is a printable character (the ASCII values of printable characters start at 32~\cite{ascii})~\cite{seclib}. Just as with fBad1, fBad2 does not satisfy the non-interference property.
+which would give information about whether or not the variable {\tt c} is a printable character (the ASCII values of printable characters start at 32~\cite{ascii})~\cite{seclib}. Just as with {\tt fBad1}, {\tt fBad2} does not satisfy the non-interference property.
 
 \section{Declassification}
 \label{chapter:declassification}
-A system that satisfies the non-interference policy is a very strict system. A system usually needs some kind of controlled release of confidential data. As an example, imagine a login system. A user's password should be handled as confidential data when the user attempts to login. If the login succeeded the user should be authenticated and redirected whereas if the login failed the user should be prompted with a message saying the username/password combination was incorrect. If the system was non-interfered, there could be no message explaining to the user that the username/password was incorrect since that output would rely on confidential data. Another example could be when a credit card is being used to pay with online. In the order receipt it is not uncommon to include the last four digits of the credit card number. Again, this is something that can not be done if the system is non-interfered since a credit card number should be considered confidential.
+A system that satisfies the non-interference policy is a very strict system. A system usually needs some kind of controlled release of confidential data. As an example, imagine a login system. A user's password should be handled as confidential data when the user attempts to login. If the login succeeded the user should be authenticated and redirected whereas if the login failed the user should be prompted with a message saying the username/password combination was incorrect. If the system was non-interfered, there could be no message explaining to the user that the username/password was incorrect since that output would rely on confidential data. Another example could be when a credit card is being used for online payment. In the order receipt it is not uncommon to include the last four digits of the credit card number. Again, this is something that can not be done if the system is non-interfered since a credit card number should be considered confidential.
 
 Unfortunately, there is no way for the non-interference policy to distinguish between intended release of information and release that occurs due to an attack or programming error. In order to allow controlled information leak one can use declassification policies.
 Taking the example of the credit card explained above and assuming a function \emph{getLastFour} that takes a secret credit card number \emph{h} as an argument and returns a secret value containing the last four digits of the credit card number, producing an intended information release to the variable \emph{l} can be achieved by calling a \emph{declassify} function:
@@ -199,14 +200,14 @@ However, just allowing declassification everywhere can be dangerous. In theory, 
 and these should be seen as recommendations for how to build the declassification policies in systems.
 \section{Related Work}
 \label{chapter:related}
-There have been research within information flow control and libraries have been created in order to help enforce information flow policies and secure both confidentiality and integrity of the information. Some of the most influencial findings for this project will be described below.
+There has been research within information flow control and libraries have been created in order to help enforce information flow policies and secure both confidentiality and integrity of the information. Some of the most relevant findings for this project will be described below.
 \subsection{LIO}
-LIO (Labeled IO) is a library created in Haskell for dynamic information flow control~\cite{lio-2011}. Compared to the library created for this thesis, LIO keeps track of a \emph{current label}, which is an upper bound of the labels of all data that can be observed or modified in the evaluation context. One can also bound the current label with a \emph{current clearance}, where the clearance of a region of code can be set in advance to provide an upper bound of the current label within that region. LIO attempts to close the gap with static analysis, which even though it has its advantages (fewer run-time failures, reduced run-time overhead etc.) has a problem when new kinds of data can be encountered at runtime, and dynamic systems.
+LIO (Labeled IO) is a library created in Haskell for dynamic information flow control~\cite{lio-2011}. Compared to the library created for this thesis, LIO keeps track of a \emph{current label}, which is an upper bound of the labels of all data that can be observed or modified in the evaluation context. One can also bound the current label with a \emph{current clearance}, where the clearance of a region of code can be set in advance to provide an upper bound of the current label within that region. LIO attempts to close the gap with static analysis, which even though it has its advantages (fewer run-time failures, reduced run-time overhead etc.) has a problem when new kinds of data (e.g. user input) can be encountered at runtime, and dynamic systems.
 \subsection{Seclib}
-Seclib is a light-weight library for information flow control in Haskell~\cite{seclib, seclib_git}. Just as with the library created in this thesis, Seclib is based on monads and all private data lives within the created monad. However, compared to the library in this thesis, Seclib creates two different monads, \textbf{Sec} and \textbf{SecIO}, where SecIO is an extended IO monad (an IO monad wrapped around a Sec monad). Seclib was designed to be a small, lightweight library and consists, as of Jan. 29 2015, 342 lines of code.
+Seclib is a light-weight library for information flow control in Haskell~\cite{seclib, seclib_git}. Just as with the library created in this thesis, Seclib is based on monads and all private data lives within the created monad. However, compared to the library in this thesis, Seclib creates two different monads, \textbf{Sec} and \textbf{SecIO}, where SecIO is an extended IO monad (an IO monad wrapped in a Sec monad). Seclib was designed to be a small, lightweight library and consists, as of Jan. 29 2015, of only 342 lines of code.
 \subsection{LMonad}
-LMonad~\cite{lmonad} is a library tailored to provide information flow control for web applications written in Yesod, a framework for creating web applications in Haskell~\cite{yesod}. It is a generalization of LIO and provides a Monad Transformer~\cite{monad-transformer}, which in theory means it can be "wrapped around" any monad. After defining the policies, LMonad guarantees that database interacions follow the designed policies.
+LMonad~\cite{lmonad} is a library tailored to provide information flow control for web applications written in Yesod, a framework for creating web applications in Haskell~\cite{yesod}. It is a generalization of LIO and provides a Monad Transformer~\cite{monad-transformer}, which in theory means it can be "wrapped around" any monad. Programmers can define their own information flow control policies and after defining them, LMonad guarantees that database interacions follow the policies.
 \subsection{RDR}
 RDR is a monad which builds on the DLM (Decentralized Label Model) to provide information flow control. The purpose of RDR is to extend restricted delegation and revocation to information flow control. The main principle is to allow information flow to a predefined chain of principals, but keeping a right to revoke it at any time. The RDR monad is built by using a Reader monad over the IO monad. One of the ideas of RDR is to see restricted delegation as declassification and protected values should only be allowed to be read by using a valid principal and due to the DLM, mutually-distrusting principals should be allowed to express individual confidentiality and integrity policies~\cite{rdr}.
 \subsection{Why another library?}
-As explained above, there are already working libraries for information flow control so why would another library be needed? Even though the current libraries are good, they lack one part - integration with another system. The library created for this thesis is supposed to close the gap between a static control for information flow control and already created tools for dynamic check of information flow control (JSFlow) and created tools for securing JavaScript from the viewpoint of a type system. The created library will be able to be run in GHC if one wants to create a system strictly for Haskell but it should also be able to run the code with Haste and as a result get produced JavaScript code which is tagged so JSFlow can dynamically track the information flow.
+As explained above, there are already working libraries for information flow control so why would another library be needed? Even though the current libraries are good, they lack one part - integration with another system. The library created for this thesis is supposed to close the gap between static control for information flow control and already created tools for dynamic check of information flow control (JSFlow) and created tools for securing JavaScript from the viewpoint of a type system. The created library will be able to be run in GHC if one wants to create a system strictly for Haskell but it should also be able to run the code with Haste and as a result get produced JavaScript code which is tagged so JSFlow can dynamically track the information flow.

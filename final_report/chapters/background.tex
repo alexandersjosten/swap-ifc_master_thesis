@@ -7,28 +7,27 @@ There are several odd features one can use in JavaScript due to the weak dynamic
 
 Another issue with the weak type system in JavaScript can be seen in Figure~\ref{fig:js_comparison}. It is perfectly legal to compare a function with an array in JavaScript. The code in Figure~\ref{fig:js_comparison} will evaluate to \textbf{true}. This can in turn make it very difficult to find potential bugs since JavaScript will try and convert values of different types to the same types and then make the comparison. In e.g. Java, the comparison in Figure~\ref{fig:js_comparison} would not go through the type checker.
 \begin{figure}[h]
-  \lstset{language=Java}
-  \begin{lstlisting}
+  \begin{verbatim}
     int a = 2;
     boolean b = true;
     a + b;  // This should not be allowed to be run
-  \end{lstlisting}
+  \end{verbatim}
   \caption{Logical error in Java}
   \label{fig:error_java}
 \end{figure}
 \begin{figure}[h]
-  \begin{lstlisting}
+  \begin{verbatim}
     var a = 2;
     var b = true;
     a + b;  // This will evaluate to 3
-  \end{lstlisting}
+  \end{verbatim}
   \caption{Logical error in JavaScript}
   \label{fig:error_js}
 \end{figure}
 \begin{figure}[h]
-  \begin{lstlisting}
+  \begin{verbatim}
     (function(x) { return x * x; }) > [1,2,3];
-  \end{lstlisting}
+  \end{verbatim}
   \caption{Weird comparison in JavaScript}
   \label{fig:js_comparison}
 \end{figure}
@@ -59,7 +58,7 @@ When looking at the other major flaw, namely that JavaScript has access to sensi
     \end{itemize}
 \end{itemize}
 \section{Haste}
-Haste (HaSkell To Ecmascript compiler) is a compiler that compiles the high-level language Haskell to JavaScript. The Haste compiler is plugged in to the compilation process from GHC, the Glasgow Haskell Compiler. As can be seen in Figure~\ref{fig:system}, Haste starts its compiling process after GHC has done som code optimization. From the optimized code from GHC, Haste will create an AST, Abstract Syntax Tree, for JavaScript. The AST will then be optimized and after the optimization process in Haste is done the actual JavaScript code will be generated.
+Haste (HASkell To Ecmascript compiler) is a compiler that compiles the high-level language Haskell to JavaScript. The Haste compiler is plugged in to the compilation process from GHC, the Glasgow Haskell Compiler. As can be seen in Figure~\ref{fig:system}, Haste starts its compiling process after GHC has done som code optimization. From the optimized code from GHC, Haste will create an AST, Abstract Syntax Tree, for JavaScript. The AST will then be optimized and after the optimization process in Haste is done the actual JavaScript code will be generated.
 \begin{figure}[h]
   \begin{tabular}{|c|c|c|}
     \hline
@@ -94,19 +93,19 @@ Implicit flows occurs when e.g. a language's control structure is used to leak i
 \begin{figure}[h]
   \captionsetup[subfigure]{singlelinecheck=off,justification=raggedright}
   \begin{subfigure}[b]{0.5\textwidth}
-    \begin{lstlisting}
+    \begin{verbatim}
       l := h
-    \end{lstlisting}
+    \end{verbatim}
     \caption{Explicit flow}
     \label{fig:expflow}
   \end{subfigure}
   \begin{subfigure}[b]{0.5\textwidth}
-    \begin{lstlisting}
+    \begin{verbatim}
       h := h mod 2;
       l := 0;
       if h = 1 then l := 1;
       else skip;
-    \end{lstlisting}
+    \end{verbatim}
     \caption{Implicit flow}
     \label{fig:impflow}
   \end{subfigure}
@@ -117,7 +116,7 @@ Implicit flows occurs when e.g. a language's control structure is used to leak i
 When creating a web application in JavaScript that JSFlow should be able to check, there is only one function that the programmer must know about - the \emph{upg} function. The function upg is used when lifting a computation in to a high context. In Figure~\ref{fig:upg}, the variable \emph{h} is lifted in to a high context by calling upg on the data to be stored to \emph{h}. Due to the call to upg, the variable h will be a high variable containing the number 42. As can be seen with the variables \emph{l}, which is a low variable, and \emph{t}, which is a high variable, the default level for a compuation is low unless JSFlow infers that a variable \textbf{must} be high due to part of the compuation being high.
 
 \begin{figure}[h]
-  \begin{lstlisting}
+  \begin{verbatim}
     // Variable l is a low variable of value 2
     var l = 2;
 
@@ -127,37 +126,31 @@ When creating a web application in JavaScript that JSFlow should be able to chec
     /* Variable t must be a high variable due to h
        being high */
     var t = l + h;
-  \end{lstlisting}
+  \end{verbatim}
   \caption{Creating high and low variables in JavaScript with JSFlow}
   \label{fig:upg}
 \end{figure}
 The upg function will take a computation (in Figure~\ref{fig:upg} the compuation is simply the number 42) and bind that value to the assigned variable (in Figure~\ref{fig:upg} the variable h) and put the variable in a high context.
 
 \subsection{Flows in a pure functional language}
-Even though there are two different flows in Javascript (implicit and explicit flows), there is only one type of flow in a pure functional programming language like Haskell, an explicit flow~\cite{seclib}. As described in Chapter~\ref{chapter:implicit_flow}, an implicit flow depends on control structures in order to leak information. However, even though a pure functional programming language like Haskell contains control structures, they are still interpreted as a regular function. This means that a function like
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+Even though there are two different flows in JavaScript (implicit and explicit flows), there is only one type of flow in a pure functional programming language like Haskell, an explicit flow~\cite{seclib}. As described in Chapter~\ref{chapter:implicit_flow}, an implicit flow depends on control structures in order to leak information. However, even though a pure functional programming language like Haskell contains control structures, they are still interpreted as a regular function. This means that a function like
+\begin{verbatim}
     f :: Int -> Int
     f x = if x `mod` 2 == 0
               then 42
             else -42
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
 will look like an implicit flow but is in fact an explicit flow. This is because an if-then-else can be rewritten as a regular function~\cite{if-then-else}
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+\begin{verbatim}
     myIf :: Bool -> a -> a -> a
     myIf True  b1 _ = b1
     myIf False _ b2 = b2
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
 where b1 and b2 are the different branches. The different branches are of type \textbf{a}, which in this case can be any arbitrary expression. Rewriting the function \textbf{f} using \textbf{myIf} can be done as follows:
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+\begin{verbatim}
     f :: Int -> Int
     f x = myIf (x `mod` 2 == 0) 42 (-42)
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
 
 \section{Non-interference}
 The principles of non-interference were introduced by Goguen and Meseguer in 1982~\cite{non-interference-goguen-meseguer} who defined non-interference to be
@@ -168,28 +161,22 @@ The principles of non-interference were introduced by Goguen and Meseguer in 198
 When talking about non-interference with regards to information flow control, one means a property that states that the public outcome does not depend on any private input.
 
 As an example of non-interference, assume the following function where something of type \textbf{Char} is a high value and something of type \textbf{Int} is of low value:
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+\begin{verbatim}
     fOk :: (Char, Int) -> (Char, Int)
     fOk (c, i) = (chr (ord c + i), i + 42)
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
 The function \textbf{fOk} preserves the confidentiality since it does not leak any valuable information about the value \textbf{c}. It is said to be \emph{non-interfered} since the public result (the Int value) is independent of the value of \textbf{c}. If the function instead was defined as
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+\begin{verbatim}
     fBad1 :: (Char, Int) -> (Char, Int)
     fBad1 (c, i) = (c, ord c)
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
 it would not be non-interfered because the confidentiality is broken. Information about \textbf{c} is leaked through the low Int and the corresponding decimal value of the ASCII number of \textbf{c} is returned as the second value of the tuple.
 
 Unfortunately, information leakage is seldom as explicit as in the fBad1 function. An attacker might be clever and attempt
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+\begin{verbatim}
     fBad2 :: (Char, Int) -> (Char, Int)
     fBad2 (c, i) = (c, if ord c > 31 then 1 else 0)
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
 which would give information about whether or not the variable \textbf{c} is a printable character (the ASCII values of printable characters start at 32~\cite{ascii})~\cite{seclib}. Just as with fBad1, fBad2 does not satisfy the non-interference property.
 
 \section{Declassification}
@@ -198,11 +185,9 @@ A system that satisfies the non-interference policy is a very strict system. A s
 
 Unfortunately, there is no way for the non-interference policy to distinguish between intended release of information and release that occurs due to an attack or programming error. In order to allow controlled information leak one can use declassification policies.
 Taking the example of the credit card explained above and assuming a function \emph{getLastFour} that takes a secret credit card number \emph{h} as an argument and returns a secret value containing the last four digits of the credit card number, producing an intended information release to the variable \emph{l} can be achieved by calling a \emph{declassify} function:
-\begin{center}
-  \begin{lstlisting}[language=Java]
+\begin{verbatim}
     l := declassify(getLastFour(h))
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
 However, just allowing declassification everywhere can be dangerous. In theory, an attacker could compromise the declassification and extract more information than intended. Due to this, work on classifying the declassification into four different dimensions has been presented in~\cite{declassification-dimensions}. The proposed dimensions are
 \begin{itemize}
   \item \textbf{What} information is released.

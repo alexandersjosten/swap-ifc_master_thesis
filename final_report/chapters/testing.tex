@@ -3,68 +3,40 @@
 The testing part of the project was done in two different ways. First, randomized tests of SwapIFC were done using QuickCheck~\cite{quickcheck, quickcheck-wiki}. Randomized testing is an area where a lot of research has been made.
 \section{"Naïve" testing of the primitives}
 One does not need to write randomized tests in order to test the primitives of the library. All that is needed is to write functions that captures every potential scenario. For the "add" primitive of two flows, the valid flows can be seen in Figure~\ref{fig:validFlow}.
-\begin{figure}[h]
-  \begin{center}
-    \begin{lstlisting}[language=Haskell]
-      testFlowNumLL :: Num a
-                    => Flow Low a
-                    -> Flow Low a
-                    -> Flow Low a
-      testFlowNumLL = (.+.)
-    
-      testFlowNumLH :: Num a
-                    => Flow Low a
-                    -> Flow High a
-                    -> Flow High a
-      testFlowNumLH = (.+.)
-    
-      testFlowNumHL :: Num a
-                    => Flow High a
-                    -> Flow Low a
-                    -> Flow High a
-      testFlowNumHL = (.+.)
-    
-      testFlowNumHH :: Num a
-                    => Flow High a
-                    -> Flow High a
-                    -> Flow High a
-      testFlowNumHH = (.+.)
-    \end{lstlisting}
-  \end{center}
-  \caption{Valid flows for add primitive}
-  \label{fig:validFlow}
-\end{figure}
 However, if one attempted any of the following flows that is present in Figure~\ref{fig:invalidFlow}, it would yield a compile time error due to the typeclass {\tt FlowNum} not being defined for those cases. {\tt FlowNum} is only defined to allow information flow like the ones in Figure~\ref{fig:validFlow}. This holds for every primitive in the library.
 \begin{figure}[h]
-  \begin{center}
-    \begin{lstlisting}[language=Haskell]
-      testFlowNumLL' :: Num a
-                     => Flow Low a
-                     -> Flow Low a
-                     -> Flow High a
-      testFlowNumLL' = (.+.)
+\begin{verbatim}
+testFNumLL :: Num a => Flow Low a -> Flow Low a -> Flow Low a
+testFNumLL = (.+.)
+  
+testFNumLH :: Num a => Flow Low a -> Flow High a -> Flow High a
+testFNumLH = (.+.)
     
-      testFlowNumLH' :: Num a
-                     => Flow Low a
-                     -> Flow High a
-                     -> Flow Low a
-      testFlowNumLH' = (.+.)
+testFNumHL :: Num a => Flow High a -> Flow Low a -> Flow High a
+testFNumHL = (.+.)
+    
+testFNumHH :: Num a => Flow High a -> Flow High a -> Flow High a
+testFNumHH = (.+.)
+\end{verbatim}
+\caption{Valid flows for add primitive}
+\label{fig:validFlow}
+\end{figure}
+\begin{figure}[h]
+\begin{verbatim}
+testFNumLL' :: Num a => Flow Low a -> Flow Low a -> Flow High a
+testFNumLL' = (.+.)
+  
+testFNumLH' :: Num a => Flow Low a -> Flow High a -> Flow Low a
+testFNumLH' = (.+.)
 
-      testFlowNumHL' :: Num a
-                     => Flow High a
-                     -> Flow Low a
-                     -> Flow Low a
-      testFlowNumHL' = (.+.)
+testFNumHL' :: Num a => Flow High a -> Flow Low a -> Flow Low a
+testFNumHL' = (.+.)
 
-      testFlowNumHH' :: Num a
-                     => Flow High a
-                     -> Flow High a
-                     -> Flow Low a
-      testFlowNumHH' = (.+.)
-    \end{lstlisting}
-  \end{center}
-  \caption{Invalid flows for add primitive}
-  \label{fig:invalidFlow}
+testFNumHH' :: Num a => Flow High a -> Flow High a -> Flow Low a
+testFNumHH' = (.+.)
+\end{verbatim}
+\caption{Invalid flows for add primitive}
+\label{fig:invalidFlow}
 \end{figure}
 This is of course not a feasable solution and because of this, unit testing and random testing with QuickCheck was done.
 

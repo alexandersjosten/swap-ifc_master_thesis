@@ -52,7 +52,12 @@ Examiner: Andrei Sabelfeld
 
 \begin{frame}
   \frametitle{Security issues in web applications}
-  
+  \begin{itemize}
+    \item Many ways an attacker can gain access to information. \pause
+    \item Cross Site Scripting (XSS) attacks ranked nr. 3 on OWASP Top 10 list. \pause
+    \item Usual culprits: non-escaped user input. \pause
+    \item Harmless pranks (show alert box) to redirecting to fake website to steal valuable information.
+  \end{itemize}
 \end{frame}
 
 %------------------------------------------------------------------------------%
@@ -177,7 +182,7 @@ f' (c, i) = (c, ord c)
   \pause
   If the system was non-interfered, no information would be given to the user.\pause
   \newline
-  To solve this, declassification can be used.
+  Declassification is used to "downgrade" a value from a secure context to a less secure context.
 \end{frame}
 
 %------------------------------------------------------------------------------%
@@ -208,15 +213,7 @@ f' (c, i) = (c, ord c)
 \begin{frame}[fragile]
   \frametitle{SwapIFC - The library}
   \begin{itemize}
-  \item Two different Monad, Applicative and Functor instances. \pause In particular, \textbf{return} differs:
-\begin{verbatim}
-#ifdef __HASTE__
-  return = Flow . upg
-#else
-  return = Flow . return
-#endif
-\end{verbatim}
-\pause
+    \item Two different Monad, Applicative and Functor instances. In particular, \textbf{return} differs. \pause
     \item Implementation of primitives for \textbf{Bool}, \textbf{Num}, \textbf{Frac}, \textbf{Ord} and \textbf{Eq} classes. \pause
 \begin{verbatim}
 Flow Low 10 .+. Flow Low 20 ==> Flow Low 30
@@ -229,23 +226,92 @@ Flow Low 10 .+. Flow Low 20 ==> Flow Low 30
 
 %------------------------------------------------------------------------------%
 
+\begin{frame}[fragile]
+  \frametitle{SwapIFC - The library}
+  \begin{block}{Flow type}
+\begin{verbatim}
+  newtype Flow tag a = Flow (IO a)
+\end{verbatim}
+  \end{block}
+  {\tt tag} is a phantom type, i.e. lives only in the type system. \pause
+  \begin{block}{Class implementations}
+\begin{verbatim}
+  class FlowBool t1 t2 t3 | t1, t2 -> t3 where
+  -- function implementations for boolean operators
+
+  instance FlowBool High High High
+  instance FlowBool High Low High
+  instance FlowBool Low High High
+  instance FlowBool Low Low Low
+\end{verbatim}
+  \end{block}
+  Uses functional dependencies to define how {\tt t1} and {\tt t2} relates to {\tt t3}.
+\end{frame}
+
+%------------------------------------------------------------------------------%
+
 \begin{frame}
   \frametitle{Side effects}
-  
+  JSFlow keeps track of \emph{program counter label} ({\tt pc}) which reflects security level. \pause
+  \newline
+  Within every guarded expression, it must hold that:\[ \forall ge \in GuardedExpressions: ge_c \geq pc \] \pause
+  If \emph{pc} is high, all modified \emph{ge} must be high. If \emph{pc} is low, \emph{ge} can be either high or low.
 \end{frame}
 
 %------------------------------------------------------------------------------%
 
-\begin{frame}
+\begin{frame}[fragile]
+  \frametitle{Side effects}
+  SwapIFC implements side effects with IORefs:
+  \begin{block}{SwapIFC side effects}
+\begin{verbatim}
+  newtype FlowRef tag a = FlowRef (IORef a)
+
+  modifyFlowRef :: FlowRef t a -> (a -> a) -> Flow t a
+  readFlowRef :: FlowRef t a -> Flow t a
+\end{verbatim}
+  \end{block}
+  \pause
+  Handling side effects in SwapIFC stricter compared to JSFlow, tag of {\tt FlowRef} must be the same as the {\tt Flow}.
+\end{frame}
+
+%------------------------------------------------------------------------------%
+
+\begin{frame}[fragile]
   \frametitle{Integrating SwapIFC with Haste}
-  
+  Use preprocessor directives to know if Haste is the compiler:
+  \begin{block}{}
+\begin{verbatim}
+-- High Monad instance
+#ifdef __HASTE__
+  return = Flow . upg
+#else
+  return = Flow . return
+#endif
+\end{verbatim}
+  \end{block}
+  \pause
+  Call special utility functions if Haste is the compiler.
 \end{frame}
 
 %------------------------------------------------------------------------------%
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{Communicating with JSFlow}
-  
+  Use Foreign Function Interface (FFI)
+  \begin{block}{}
+\begin{verbatim}
+-- Have JavaScript code call upg in JSFlow
+upg :: a -> IO a
+upg = fmap fromOpaque . ffi "upg" . toOpaque
+
+-- Have JavaScript code call lprint in JSFlow
+lprintHaste :: Show a => a -> IO ()
+lprintHaste = ffi "(function(x) { lprint(x); })" . show
+\end{verbatim}
+  \end{block}
+  \pause
+  Uses anonymous function for {\tt lprintHaste}. Otherwise, edge case in the static runtime code from Haste is triggered.
 \end{frame}
 
 %------------------------------------------------------------------------------%

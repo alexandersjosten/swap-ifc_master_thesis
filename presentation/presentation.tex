@@ -201,7 +201,7 @@ var h = upg(42);
   \end{block}
   \textbf{l} will be a \emph{low} value, \textbf{h} will be a \emph{high} value.
   \pause
-  \begin{block}{Upgrading a value}
+  \begin{block}{Downgrading a value}
 \begin{verbatim}
 var h = upg(42);
 var l = declassify(h);
@@ -222,7 +222,7 @@ Flow Low 10 .+. Flow Low 20 ==> Flow Low 30
 \end{verbatim}
 \pause
     \item Unsafe functions for \textbf{declassify} and \textbf{unwrap} a value. \pause
-    \item Supports side effects using \textbf{IORef}.
+    \item Supports side effects.
   \end{itemize}
 \end{frame}
 

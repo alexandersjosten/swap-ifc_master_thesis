@@ -11,7 +11,7 @@ lowFlowAdding = do
   lprint f
   lprint $ mkLow "Second value to add:"
   lprint g
-  lprint $ mkLow "Adding the together:"
+  lprint $ mkLow "Adding them together:"
   lprint $ f .+. g
 
 main = runFlow lowFlowAdding

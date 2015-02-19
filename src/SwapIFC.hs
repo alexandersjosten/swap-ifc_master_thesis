@@ -3,6 +3,7 @@ module SwapIFC (
     High
   , Low
   , Flow
+  , FlowRef
   , FlowNum (..)
   , FlowFrac (..)
   , FlowBool (..)
@@ -14,6 +15,12 @@ module SwapIFC (
   , runFlow
   , lprint
   , declassify
+  , newFlowRef
+  , readFlowRef
+  , writeFlowRef
+  , modifyFlowRef
+  , flowGetLine
+  , unlprint
     -- Stuff from SwapIFC.Unsafe
   , unsafeShow
   , unwrap

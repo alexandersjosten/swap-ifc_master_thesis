@@ -6,6 +6,7 @@ module SwapIFC.Types where
 import SwapIFC.Haste.CodeGen
 import Control.Applicative
 import Control.Monad
+import Data.IORef
 
 -- | High datatype for private values.
 data High
@@ -15,6 +16,8 @@ data Low
 
 -- | The Flow type keeps track of the information flow.
 newtype Flow tag a = Flow (IO a)
+
+newtype FlowRef tag a = FlowRef (IORef a)
 
 -- Monadic stuff for High flow..
 instance Monad (Flow High) where

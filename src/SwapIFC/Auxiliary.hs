@@ -5,6 +5,7 @@ module SwapIFC.Auxiliary where
 import SwapIFC.Types
 import SwapIFC.Haste.CodeGen
 import Control.Exception
+import Data.IORef
 
 -- | upgrade takes a Flow with Low level and upgrades it
 upgrade :: Flow Low a -> Flow High a
@@ -44,3 +45,21 @@ declassify (Flow ioa) = Flow $ declassifyHaste ioa
 #else
 declassify (Flow ioa) = Flow ioa
 #endif
+
+newFlowRef :: a -> Flow t (FlowRef t a)
+newFlowRef x = Flow $ FlowRef `fmap` newIORef x
+
+readFlowRef :: FlowRef t a -> Flow t a
+readFlowRef (FlowRef ioref) = Flow $ readIORef ioref
+
+writeFlowRef :: FlowRef t a -> a -> Flow t ()
+writeFlowRef (FlowRef ioref) a = Flow $ writeIORef ioref a
+
+modifyFlowRef :: FlowRef t a -> (a -> a) -> Flow t ()
+modifyFlowRef (FlowRef ioref) f = Flow $ modifyIORef' ioref f
+
+flowGetLine :: Flow t String
+flowGetLine = Flow getLine
+
+unlprint :: String -> Flow Low ()
+unlprint = Flow . putStrLn

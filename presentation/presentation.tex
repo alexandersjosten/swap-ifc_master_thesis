@@ -78,7 +78,7 @@ console.log(
   \pause
   \newline
   Access to sensitive information (cookies, session tokens) in the browser. \pause
-  
+  Crucial to ensure information can not be leaked.
 \end{frame}
 
 %------------------------------------------------------------------------------%
@@ -182,7 +182,9 @@ f' (c, i) = (c, ord c)
   \pause
   If the system was non-interfered, no information would be given to the user.\pause
   \newline
-  Declassification is used to "downgrade" a value from a secure context to a less secure context.
+  Declassification is used to "downgrade" a value from a secure context to a less secure context. \pause
+  \newline
+  Can be classified as four dimensions: \textbf{who}, \textbf{what}, \textbf{when}, \textbf{where}.
 \end{frame}
 
 %------------------------------------------------------------------------------%
@@ -193,16 +195,16 @@ f' (c, i) = (c, ord c)
   \pause
   \begin{block}{Upgrading a value}
 \begin{verbatim}
-  var l = 10;
-  var h = upg(42);
+var l = 10;
+var h = upg(42);
 \end{verbatim}
   \end{block}
   \textbf{l} will be a \emph{low} value, \textbf{h} will be a \emph{high} value.
   \pause
   \begin{block}{Upgrading a value}
 \begin{verbatim}
-  var h = upg(42);
-  var l = declassify(h);
+var h = upg(42);
+var l = declassify(h);
 \end{verbatim}
   \end{block}
   \textbf{l} will be a \emph{low} value, containing the same value as \textbf{h}.
@@ -230,19 +232,19 @@ Flow Low 10 .+. Flow Low 20 ==> Flow Low 30
   \frametitle{SwapIFC - The library}
   \begin{block}{Flow type}
 \begin{verbatim}
-  newtype Flow tag a = Flow (IO a)
+newtype Flow tag a = Flow (IO a)
 \end{verbatim}
   \end{block}
   {\tt tag} is a phantom type, i.e. lives only in the type system. \pause
   \begin{block}{Class implementations}
 \begin{verbatim}
-  class FlowBool t1 t2 t3 | t1, t2 -> t3 where
-  -- function implementations for boolean operators
+class FlowBool t1 t2 t3 | t1, t2 -> t3 where
+-- function implementations for boolean operators
 
-  instance FlowBool High High High
-  instance FlowBool High Low High
-  instance FlowBool Low High High
-  instance FlowBool Low Low Low
+instance FlowBool High High High
+instance FlowBool High Low High
+instance FlowBool Low High High
+instance FlowBool Low Low Low
 \end{verbatim}
   \end{block}
   Uses functional dependencies to define how {\tt t1} and {\tt t2} relates to {\tt t3}.
@@ -265,10 +267,12 @@ Flow Low 10 .+. Flow Low 20 ==> Flow Low 30
   SwapIFC implements side effects with IORefs:
   \begin{block}{SwapIFC side effects}
 \begin{verbatim}
-  newtype FlowRef tag a = FlowRef (IORef a)
+newtype FlowRef tag a = FlowRef (IORef a)
 
-  modifyFlowRef :: FlowRef t a -> (a -> a) -> Flow t a
-  readFlowRef :: FlowRef t a -> Flow t a
+newFlowRef :: a -> Flow t (FlowRef t a)
+readFlowRef :: FlowRef t a -> Flow t a
+writeFlowRef :: FlowRef t a -> a -> Flow t ()
+modifyFlowRef :: FlowRef t a -> (a -> a) -> Flow t ()
 \end{verbatim}
   \end{block}
   \pause
@@ -351,7 +355,7 @@ lprintHaste = ffi "(function(x) { lprint(x); })" . show
 %------------------------------------------------------------------------------%
 
 \begin{frame}
-  \frametitle{Conclussion}
+  \frametitle{Conclusion}
   \begin{itemize}
     \item Library for static information flow control. \pause
     \item Non-interference is guaranteed if no unsafe operations are used. \pause
@@ -367,8 +371,7 @@ lprintHaste = ffi "(function(x) { lprint(x); })" . show
   As with everything, nothing is perfect. \pause
   \begin{itemize}
     \item Implement full support for JSFlow (i.e. support High flows) and test the code generation. \pause
-    \item Add support for Haste.App. \pause
-    \item End-to-end communication, including database. \pause
+    \item End-to-end communication, including Haste.App and databases etc. \pause
     \item More features for JSFlow, including JSON and browser support. \pause
     \item More primitives for SwapIFC.
   \end{itemize}
@@ -389,4 +392,4 @@ lprintHaste = ffi "(function(x) { lprint(x); })" . show
 
 %------------------------------------------------------------------------------%
 
-\end{document} 
+\end{document}

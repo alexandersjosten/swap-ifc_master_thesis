@@ -1,6 +1,6 @@
 \chapter{Implementation}
 \label{chapter:implementation}
-The implementation of the library consists of several modules which a user is allowed to use in order to create programs which are secure with regards to information flow control. The standard implementation of the library consists of a type \emph{Flow}, which is a flow in the program (i.e. data with a high or low tag). It also provides the user with standard operations, e.g. adding two flows if the flows are of such a type where addition is valid.
+The implementation of the library consists of several modules which a user is allowed to use in order to create programs which are secure with regards to information flow control. The standard implementation of the library consists of a type {\tt Flow}, which is a flow in the program (i.e. data with a high or low tag). It also provides the user with standard operations, e.g. adding two flows if the flows are of such a type where addition is valid.
 
 Currently, the library has a representation of all the standard operations within the following Haskell types:
 \begin{itemize}
@@ -14,11 +14,11 @@ Currently, the library has a representation of all the standard operations withi
 The Monad, Functor and Applicative instances for the High and Low Flow can be seen in Appendix~\ref{app:instances} and an example of how the standard operations for the Num type in Haskell can be found in Appendix~\ref{app:num_type}. An overview of the structure of the library can be seen in Appendix~\ref{app:library_structure}.
 \section{The Flow type}
 \label{sec:flow}
-The Flow type is defined as a newtype in Haskell, i.e. a definition that can only contain one constructor. The Flow type became
+The Flow type is defined as a {\tt newtype} in Haskell, i.e. a definition that can only contain one constructor. The Flow type became
 \begin{verbatim}
     newtype Flow tag a = Flow (IO a)
 \end{verbatim}
-and even though it has a tag in the definition (the left hand side), it does not contain a tag on the right hand side. Instead, the tag is implemented as a phantom type~\cite{haskell_phantom}: a type which does not appear on the right hand side of a type definition and so has no representation on the value level. A phantom type can be checked by the type checker but it can not be used by the user via e.g. pattern-matching. This means that from a value standpoint, the Flow type is simply a container for IO actions and the rules for the information flow control rules are implemented in the type checker alone. However, a from a user standpoint, the Flow type is a taged computation. An example of how to add five to a Flow of High value is
+and even though it has a tag in the definition (the left hand side), it does not contain a tag on the right hand side. Instead, the tag is implemented as a phantom type~\cite{haskell_phantom}: a type which does not appear on the right hand side of a type definition and so has no representation on the value level. A phantom type can be checked by the type checker but it can not be used by the user via e.g. pattern-matching. This means that from a value standpoint, the Flow type is simply a container for IO actions and the rules for the information flow control rules are implemented in the type checker alone. However, from a user standpoint, the Flow type is a tagged computation. An example of how to add five to a Flow of High value is
 \begin{verbatim}
     addFiveFlow :: Flow High Int -> Flow High Int
     addFiveFlow f = do
@@ -28,9 +28,9 @@ and even though it has a tag in the definition (the left hand side), it does not
 where a new Flow (the variable {\tt b}) is created and added with the given Flow {\tt f}.
 
 \subsection{Monad instance}
-Two separate monad instances was created in order to be able to handle potential code generation towards Haste, one for High and one for Low flow. If Haste was the compiler, then the High flow needed to be compiled with a call to the \emph{upg} function in JSFlow.
+Two separate monad instances were created in order to be able to handle potential code generation towards Haste, one for High and one for Low flow. If Haste was the compiler, then the High flow needed to be compiled with a call to the \emph{upg} function in JSFlow.
 
-Every Monad created in Haskell must also be a Functor and an Applicative by the Functor-Applicative-Monad proposal~\cite{functor_applicative_monad}. Starting from GHC 7.10, every Monad that is not a Functor or Applicative will generate a compile error. Due to the Functor-Applicative-Monad proposal, the created Monad for the Flow type is a Functor and an Applicative as well.
+Every Monad created in Haskell must also be a Functor and an Applicative by the Functor-Applicative-Monad proposal. Starting from GHC 7.10, every Monad that is not a Functor or Applicative will generate a compile error~\cite{functor_applicative_monad}. Due to the Functor-Applicative-Monad proposal, the created Monad for the Flow type is a Functor and an Applicative as well.
 \subsubsection{Monad laws and Flow}
 \label{chapter:monad-laws}
 If the Flow type is implemented correctly as a monad, it should satisfy the following three laws~\cite{functor-monad-law}:
@@ -44,7 +44,7 @@ The first monadic law is easy to prove. It can be done in two steps:
   1. return a >>= k = Flow (IO a) >>= k
   2.                = k a
 \end{alltt}
-where the transformation on line 1 is due to the definition of return in the library and the transformation on line 2 is due to the definition of bind in the library.
+where the transformation on line 1 is due to the definition of return in the library and the transformation on line 2 is due to the definition of ({\tt >>=}) in the library.
 
 The second law is just as easily shown.
 \begin{alltt}
@@ -52,7 +52,7 @@ The second law is just as easily shown.
   2.              = return a
   3.              = Flow (IO a)
 \end{alltt}
-The transformation between lines 1 and 2 is due to the definition of bind and the transformation on line 3 is due to the definition of return.
+The transformation between lines 1 and 2 is due to the definition of ({\tt >>=}) and the transformation on line 3 is due to the definition of return.
 
 To show that the third law is satisfied, it is enough to show that the left hand side and the right hand side evaluate to the same value. The left hand side is evaluated as:
 \begin{alltt}
@@ -60,7 +60,7 @@ To show that the third law is satisfied, it is enough to show that the left hand
   2.                         = (\(\lambda\)x -> k x >>= h) a
   3.                         = k a >>= h
 \end{alltt}
-where the transformation between lines 1 and 2 is due to the definition of bind. It is simple lambda-calculus to apply the value {\tt a} to the function {\tt \(\lambda\)x -> k x >>= h} on line two and it is through this the result on line 3 is derived.
+where the transformation between lines 1 and 2 is due to the definition of ({\tt >>=}). It is simple lambda-calculus to apply the value {\tt a} to the function {\tt \(\lambda\)x -> k x >>= h} on line two and it is through this the result on line 3 is derived.
 \newline
 \newline
 Similarly, deriving the right hand side will yield
@@ -68,18 +68,18 @@ Similarly, deriving the right hand side will yield
   1. (m >>= k) >>= h = (Flow (IO a) >>= k) >>= h
   2.                 = k a >>= h
 \end{alltt}
-where the transformation between lines 1 and 2 is due to the definition of bind. As can be seen, the left hand side yields the same result as the right hand side and the two sides are therefore equal.
+where the transformation between lines 1 and 2 is due to the definition of ({\tt >>=}). As can be seen, the left hand side yields the same result as the right hand side and the two sides are therefore equal.
 
-At first glance, the third law can be non-intuitive. However, due to the type signature of bind, {\tt m} must be of type {\tt Monad m => m a}, {\tt k x} must be a monadic value (which indicates that the function {\tt k} must have the type signature {\tt (Monad m => a -> m b)} and {\tt h} must have type {\tt (Monad m => b -> m c)}. Due to this, it should be allowed to have {\tt m >>= k} since that would mean {\tt (Monad m => m a >>= (a -> m b))} which would type check. The result of {\tt m >>= k} is of type {\tt Monad m => m b} and since {\tt h} has type signature {\tt (Monad m => b -> m c)}, it is valid to have {\tt (m >>= k) >>= h}.
+At first glance, the third law can be non-intuitive. However, due to the type signature of ({\tt >>=}), {\tt m} must be of type {\tt Monad m => m a}, {\tt k x} must be a monadic value (which indicates that the function {\tt k} must have the type signature {\tt (Monad m => a -> m b)} and {\tt h} must have type {\tt (Monad m => b -> m c)}. Due to this, it should be allowed to have {\tt m >>= k} since that would mean {\tt (Monad m => m a >>= (a -> m b))} which would type check. The result of {\tt m >>= k} is of type {\tt Monad m => m b} and since {\tt h} has type signature {\tt (Monad m => b -> m c)}, it is valid to have {\tt (m >>= k) >>= h}.
 \subsection{Functor instance}
-In order for the Flow type to be an instance of Functor, the function \emph{fmap} must be implemented. When defining a functor, one can see it as transforming a pure function into a monadic function (if the functor is also a monad). If a type is an instance of both the Monad and Functor classes, then the implementation of \emph{fmap} must obey the following law:
+In order for the Flow type to be an instance of Functor, the function {\tt fmap} must be implemented. When defining a functor, one can see it as transforming a pure function into a monadic function (if the functor is also a monad). If a type is an instance of both the Monad and Functor classes, then the implementation of {\tt fmap} must obey the following law:
 \begin{verbatim}
     fmap :: Functor f => (a -> b) -> f a -> f b
     fmap f ioa = ioa >>= return . f
 \end{verbatim}
-which uses the \emph{bind} and the \emph{return} functions of the monad instance~\cite{functor-monad-law}. Since the Flow type should not be allowed to be transformed into something that is not a monad, this is the implementation of fmap the library will use.
+which uses the ({\tt >>=}) and the {\tt return} functions of the monad instance~\cite{functor-monad-law}. Since the Flow type should not be allowed to be transformed into something that is not a monad, this is the implementation of {\tt fmap} the library will use.
 \subsubsection{Functor laws and Flow}
-In order for the Flow type to have a proper implementation of fmap, there are two laws that must be obeyed~\cite{functor-laws}, namely
+In order for the Flow type to have a proper implementation of {\tt fmap}, there are two laws that must be obeyed~\cite{functor-laws}, namely
 \begin{alltt}
   1.  fmap id  ==  id
   2.  fmap (f . g)  ==  fmap f . fmap g
@@ -92,7 +92,7 @@ In order to see that the functor implementation satisfies the first law, it can 
   4.         = \(\lambda\)x -> x
   5.         = id
 \end{alltt}
-where the transformations on line 2 is due to precedence of function composition, line 3 is due to the fact that (return . id) has the type {\tt (Monad m => a -> m a)}. Line 4 uses the second monadic law and line 5 uses the fact that a function that takes one argument and does nothing but returning that argument is by definition the id function.
+where the transformations on line 2 is due to precedence of function composition, line 3 is due to the fact that ({\tt return . id}) has the type {\tt (Monad m => a -> m a)}. Line 4 uses the second monadic law and line 5 uses the fact that a function that takes one argument and does nothing but returning that argument is by definition the {\tt id} function.
 
 For the second law, expanding the left hand side and the right hand side will show that the results are equal. The left hand side is expanded as
 \begin{alltt}
@@ -193,12 +193,10 @@ and it is trivial to see that these properties do hold since it is the exact imp
 
 \section{Controlling the flow}
 Even though there are only two types of tags for the flow, they need to be thoroughly controlled. In order to model this, the language extensions {\tt MultiParamTypeClasses}~\cite{haskell-multiparamtypeclasses} and {\tt FunctionalDependencies}~\cite{haskell-functionaldependencies} were used. Normally, a class instance in Haskell can only take one argument, but with the extension {\tt MultiParamTypeClasses}, a created class can take several arguments. In the case for the class {\tt FlowBool}, i.e. a class that contains all operations for the Haskell type Bool wrapped in the Flow type, it is created as
-\begin{center}
-  \begin{lstlisting}[language=Haskell]
+\begin{verbatim}
     class FlowBool t1 t2 t3 | t1 t2 -> t3 where
       -- Function implementations of boolean operators
-  \end{lstlisting}
-\end{center}
+\end{verbatim}
 where t1, t2 and t3 are the arguments. As can be seen, given two tags, t1 and t2, it is possible to derive the resulting tag t3. This functionality is due to the extension {\tt FunctionalDependencies}. In order for Haskell to know how the different type variables relate to eachother, instance definitions must be added:
 \begin{verbatim}
     instance FlowBool High High High
@@ -211,7 +209,7 @@ The instance definitions give the rules for the Haskell type system which types 
 \subsection{Declassification of flows}
 When looking at the declassification dimensions mentioned in Chapter~\ref{chapter:declassification}, the library only implements the \textbf{who} dimension. The only person who can declassify information is a person who has access to the \textbf{trusted} code base (see Appendix~\ref{app:library_structure}). There is no limit as to \textbf{what} data that can be declassified other than the fact that it must be data that is tagged as {\tt High}. There is also no limit as to \textbf{when} or \textbf{where} the person can declassify data.
 
-There is also no way to declassify data without using the declassification function in the trusted code base. Without the primitives {\tt declassification} and {\tt upgrade}, there should not be possible to use any operations within SwapIFC to accidently declassify or upgrade data. One could imagine a programmer that does not know exactly how to handle the data and accidently creates a bug. Could it be possible to downgrade a {\tt Flow} from {\tt High} to {\tt Low} using {\tt >>=}? The {\tt >>=} operator has the following type signature:
+There is also no way to declassify data without using the declassification function in the trusted code base. Without the primitives {\tt declassification} and {\tt upgrade}, there should not be possible to use any operations within SwapIFC to accidently declassify or upgrade data. One could imagine a programmer that does not know exactly how to handle the data and accidently creates a bug. Could it be possible to downgrade a {\tt Flow} from {\tt High} to {\tt Low} using {\tt (>>=)}? The {\tt (>>=)} operator has the following type signature:
 \begin{verbatim}
     >>= :: Monad m => m a -> (a -> m b) -> m b
 \end{verbatim}
@@ -223,7 +221,7 @@ There exists a function {\tt mkLow} that, given a value, creates a {\tt Flow Low
 \begin{verbatim}
     mkLow :: a -> Flow Low a
 \end{verbatim}
-Now, assume the programmer accidently tries to use {\tt >>=} and {\tt mkLow} to downgrade a {\tt Flow High a} to a {\tt Flow Low a}. He/she could try to create the following malicious function:
+Now, assume the programmer accidently tries to use {\tt (>>=)} and {\tt mkLow} to downgrade a {\tt Flow High a} to a {\tt Flow Low a}. He/she could try to create the following malicious function:
 \begin{verbatim}
     blooperFunction :: a -> Flow Low b
     blooperFunction x = mkLow x
@@ -238,7 +236,7 @@ with the hopes of getting something of type {\tt Flow Low a}. However, this will
                                  -> (a -> Flow Low b)
                                  -> Flow ??? b
 \end{verbatim}
-There are two different monad instances for {\tt Flow}, one for {\tt High} and one for {\tt Low} and each has its own implementation of {\tt >>=}. Since the first argument to {\tt >>=} is of type {\tt Flow High a}, the compiler can deduce that it must use the implementation of {\tt >>=} that exists in the {\tt Flow High} monad instance. That means that the second argument, the function, must be of type {\tt (a -> Flow High b)}. However, the second argument in this accidental attempt is of type {\tt a -> Flow Low b} and due to this, accidental declassification can not be done by using {\tt >>=}. Note that this holds the other way around as well, i.e. there is no way to upgrade a value of type {\tt Flow Low a} to {\tt Flow High a} by using {\tt >>=}. Instead the function {\tt upgrade} must be used.
+There are two different monad instances for {\tt Flow}, one for {\tt High} and one for {\tt Low} and each has its own implementation of {\tt (>>=)}. Since the first argument to {\tt (>>=)} is of type {\tt Flow High a}, the compiler can deduce that it must use the implementation of {\tt (>>=)} that exists in the {\tt Flow High} monad instance. That means that the second argument, the function, must be of type {\tt (a -> Flow High b)}. However, the second argument in this accidental attempt is of type {\tt a -> Flow Low b} and due to this, accidental declassification can not be done by using {\tt (>>=)}. Note that this holds the other way around as well, i.e. there is no way to upgrade a value of type {\tt Flow Low a} to {\tt Flow High a} by using {\tt (>>=)}. Instead the function {\tt upgrade} must be used.
 
 \subsection{Non-interference of flows}
 Due to the functional dependencies and the instance definitions, using only the primitives and not having access to the trusted code base will lead to non-interference. However, non-interference can not be guaranteed within the trusted code base due to the declassification primitive and the unsafe operations ({\tt unsafeShow} to show the value of a {\tt Flow} and {\tt unwrapValue} that will strip the {\tt Flow} and {\tt IO} monad and return the pure value). The tests described in Chapter~\ref{chapter:testing} shows that the confidentiality level of a {\tt Flow} is indeed preserved when using the primitives in the library.
@@ -251,7 +249,7 @@ In order to handle side effects, JSFlow keeps track of a \emph{program counter l
 \[
 \forall ge \in GuardExpressions: ge_c \geq pc
 \]
-where GuardExpressions is the set of expressions within the specified guard and \(ge_c\) is the confidentiality level for the expression \(ge\). If any violations occur, the execution will halt.
+where \emph{GuardExpressions} is the set of expressions within the specified guard and \(ge_c\) is the confidentiality level for the expression \(ge\). If any violations occur, the execution will halt.
 
 \subsection{Side effects in the library}
 \label{chapter:side-effects-library}

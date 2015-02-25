@@ -3,7 +3,7 @@
 No matter how satisfied one is, there is always more work that can be done. In this section, several different suggestions for how to proceed in the future will be presented. The suggestions are not only about how to make the library SwapIFC better, but also other potential work within the area of information flow control.
 
 \section{Full communication for SwapIFC to JSFlow}
-At the moment, code that is generated for flows that are high will not work with JSFlow. The reason for this is due to the runtime function {\tt A} along with what the actual code generation of the Haskell code generates. A simple program for a high flow is
+At the moment, code that is generated for high flows will not work with JSFlow. The reason for this is due to the runtime function {\tt A} along with what the actual code generation of the Haskell code generates. A simple program for a high flow is
 \begin{verbatim}
     main = runFlow $ lprint (mkHigh 42)
 \end{verbatim}
@@ -11,7 +11,7 @@ which, when being executed in JSFlow should yield the output
 \begin{verbatim}
     (<>):42_<T>
 \end{verbatim}
-However, the generated code will create an error in JSFlow, stating that "write context \(<\)T\(>\) not below return context \(<>\)". This error is comming from the line {\tt return f;} in the {\tt A} function. The error is due to the following code
+However, the generated code will create an error in JSFlow, stating that \emph{"write context \(<\)T\(>\) not below return context \(<>\)"}. This error is comming from the line {\tt return f;} in the {\tt A} function. The error is due to the following code
 \begin{verbatim}
     B(A(new T(function(){
         return _n/* Haste.Foreign.$wunsafeEval */("upg");
@@ -23,7 +23,7 @@ Due to this, the most critical future work will be to get a full communication w
 
 \section{More primitives for the library}
 \label{chapter:future-primitives}
-A library for a language is never completed until it easily supports the entire language. For SwapIFC, an easy yet time consuming extension would be to add classes and primitives for more standard classes of Haskell. Adding support for handling strings and lists within the {\tt Flow} monad is a easy next step to do. However, adding a class for every standard Haskell class would be tedious, so looking more on if it is possible to have a more general class within the {\tt Flow} monad and easily lift values into it could also be a good next step.
+A library for a language is never completed until it easily supports the entire language. For SwapIFC, an easy yet time consuming extension would be to add classes and primitives for more standard classes of Haskell. Adding support for handling strings and lists within the {\tt Flow} monad is an easy next step to do. However, adding a class for every standard Haskell class would be tedious, so looking more on if it is possible to have a more general class within the {\tt Flow} monad and easily lift values into it could also be a good next step.
 
 As of now, if a programmer want to use primitives for lists within a {\tt Flow} instance he or she must write the entire function him/herself. This is something one should be able to assume that a library should handle. As of right now, it can be handled using Applicative. A very simple example of adding the primitive {\tt (++)}, which given two lists concatenates them, is
 \begin{verbatim}
@@ -52,10 +52,10 @@ By using {\tt FlowRef}, one can have mutable variables and with that side effect
 
 \section{Add support for Haste.App}
 \label{chapter:future-haste-app}
-When using Haste one can use Haste.App to perform program slicing~\cite{haste-symposium}. The point of the program slicing is to help the programmer to split the application between the server side and the client side. Haste.App introduces three monads, \textbf{App}, \textbf{Client} and \textbf{Server} where Client is the monad for the client side and Server is the monad for the server side. App is the monad that ties an application together~\cite{haste-app}. When using Haste.App and compiling with Haste, the compiler will produce client side code (i.e. JavaScript code) for everything in the Client monad while producing a binary file for the server side for everything within the Server monad. This allows a programmer to write code as one application while during the compile phase have it split. Currently, SwapIFC does not support Haste.App. Even though it could work, no work has been done to support Haste.App and therefore a good idea in the future would be to look at Haste.App and ensure that SwapIFC does indeed support Haste.App.
+When using Haste one can use Haste.App to perform program slicing~\cite{haste-symposium}. The point of the program slicing is to help the programmer to split the application between the server side and the client side. Haste.App introduces three monads, \textbf{App}, \textbf{Client} and \textbf{Server} where \textbf{Client} is the monad for the client side and \textbf{Server} is the monad for the server side. \textbf{App} is the monad that ties an application together~\cite{haste-app}. When using Haste.App and compiling with Haste, the compiler will produce client side code (i.e. JavaScript code) for everything in the \textbf{Client} monad while producing a binary file for the server side for everything within the \textbf{Server} monad. This allows a programmer to write code as one application while during the compile phase have it split. Currently, SwapIFC does not support Haste.App. Even though it could work, no work has been done to support Haste.App and therefore a good idea in the future would be to look at Haste.App and ensure that SwapIFC does indeed support Haste.App.
 
 \section{Remove the apply function in generated code}
-The function that is designed to handle function application in the generated JavaScript code from Haste has a flaw. As described in Chapter~\ref{chapter:incorporating-with-haste}, Haste currently has a problem with an edge case in JavaScript. Whenever there is a function that should be applied to an argument list, but the function does not have an explicit argument list, Haste will run into problem. I.e. any function that has the property
+The function that is designed to handle function application in the generated JavaScript code from Haste has a flaw. As described in Chapter~\ref{chapter:incorporating-with-haste}, Haste currently has a problem with an edge case in JavaScript. Whenever there is a function that should be applied to an argument list, but the function does not have an explicit argument list, Haste will run into problem, i.e. any function that has the property
 \begin{verbatim}
     function f() {
         // Do stuff here..
@@ -82,7 +82,7 @@ where the argument {\tt f} to {\tt A} can be seen as
 and the argument {\tt args} to {\tt A} is {\tt [\_r = E(\_r), \_]}. The argument {\tt f} will have a length of 0 and due to this, the arguments in {\tt args} will not be applied to the function {\tt f}.
 
 \section{More features for JSFlow}
-As JSFlow only supports ECMA-262 v5 in non-strict mode and does not support JSON (JavaScript Object Notation), a natural continuation would be to add and implement support for strict mode and JSON communication. Information flow control for JSON objects imposes a big challenge. JSON objects are used to simplify data transfer over a network and is both easy to read/write for humans and easy to parse for computers~\cite{json}. It consists of \emph{key, value} pairs, where a key (a string) is mapped to a value. An example of a simple JSON object is
+As JSFlow only supports ECMA-262 v5 in non-strict mode and does not support JSON, a natural continuation would be to add and implement support for strict mode and JSON communication. Information flow control for JSON objects imposes a big challenge. JSON objects are used to simplify data transfer over a network and is both easy to read/write for humans and easy to parse for computers~\cite{json}. It consists of \emph{key, value} pairs, where a key (a string) is mapped to a value. An example of a simple JSON object is
 \begin{verbatim}
     {
       "firstName" : "Sherlock",
@@ -98,9 +98,9 @@ As JSFlow only supports ECMA-262 v5 in non-strict mode and does not support JSON
       "spouse" : null
     }
 \end{verbatim}
-where the key {\tt "firstName"} is mapped to the string "Sherlock" and the key {\tt "address"} is mapped to a JSON object containing the information about the address. The challenges from an information flow control viewpoint is \emph{"how to effectively guarantee that no private information is leaked through JSON objects?"}. It is easy to see it is not trivial to guarantee information flow security through JSON, but should be considered as a natural next step for a dynamic system designed to guarantee information flow control in JavaScript.
+where the key {\tt "firstName"} is mapped to the string \emph{"Sherlock"} and the key {\tt "address"} is mapped to a JSON object containing the information about the address. The challenges from an information flow control viewpoint is \emph{how to effectively guarantee that no private information is leaked through JSON objects?}. It is easy to see it is not trivial to guarantee information flow security through JSON, but should be considered as a natural next step for a dynamic system designed to guarantee information flow control in JavaScript.
 
-Another feature for JSFlow would be to start add what is new in ECMA-262 v6, e.g. adding support for {\tt ArrayBuffer} which represents a generic, fixed-length binary data buffer~\cite{js_arraybuffer}. Added support for HTML5 with Websockets and make it compatible to run in a browser should of course also be considered as important features to add.
+Another feature for JSFlow would be to start add what is new in ECMA-262 v6, e.g. adding support for \emph{ArrayBuffer} which represents a generic, fixed-length binary data buffer~\cite{js_arraybuffer}. Added support for \emph{HTML5} with \emph{Websockets} and make it compatible to run in a browser should of course also be considered as important features to add.
 
 \section{End-to-End information flow control}
 JSFlow can help check the JavaScript code of an application. However, currently there is no system that ensures a cross-origin end-to-end information flow control. As mentioned in Chapter~\ref{chapter:related}, work has been done to create good information flow control libraries in Haskell. An example is LMonad, which provided information flow control for Yesod, including database interactions. There has also been work on securing database communication in LINQ using F\# with SeLINQ~\cite{selinq}, which would help track information flow across the boundaries of applications and databases. As a proof of concept, a type checker for a subset of F\# was implemented. A good continuation would be to generalize the end-to-end communication. There are several ways this can be done.

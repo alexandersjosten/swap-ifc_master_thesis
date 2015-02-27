@@ -1,8 +1,8 @@
 \chapter{Implementation}
 \label{chapter:implementation}
-The implementation of the library consists of several modules which a user is allowed to use in order to create programs which are secure with regards to information flow control. The standard implementation of the library consists of a type {\tt Flow}, which is a flow in the program (i.e. data with a high or low tag). It also provides the user with standard operations, e.g. adding two flows if the flows are of such a type where addition is valid.
+The implementation of the library (hereby referred to as \emph{SwapIFC}) consists of several modules which a user is allowed to use in order to create programs which are secure with regards to information flow control. The standard implementation of SwapIFC consists of a type \emph{Flow}, which is a flow in the program (i.e. data with a high or low tag). It also provides the user with standard operations, e.g. adding two flows if the flows are of such a type where addition is valid.
 
-Currently, the library has a representation of all the standard operations within the following Haskell types:
+Currently, SwapIFC has a representation of all the standard operations within the following Haskell types:
 \begin{itemize}
   \item Num
   \item Frac
@@ -11,14 +11,14 @@ Currently, the library has a representation of all the standard operations withi
   \item Ord
 \end{itemize}
 
-The Monad, Functor and Applicative instances for the High and Low Flow can be seen in Appendix~\ref{app:instances} and an example of how the standard operations for the Num type in Haskell can be found in Appendix~\ref{app:num_type}. An overview of the structure of the library can be seen in Appendix~\ref{app:library_structure}.
+The Monad, Functor and Applicative instances for the high and low flow can be seen in Appendix~\ref{app:instances} and an example of how the standard operations for the Num type in Haskell can be found in Appendix~\ref{app:num_type}. An overview of the structure of SwapIFC can be seen in Appendix~\ref{app:library_structure}.
 \section{The Flow type}
 \label{sec:flow}
-The Flow type is defined as a {\tt newtype} in Haskell, i.e. a definition that can only contain one constructor. The Flow type became
+The Flow type is defined as a \emph{newtype} in Haskell, i.e. a definition that can only contain one constructor. The Flow type became
 \begin{verbatim}
     newtype Flow tag a = Flow (IO a)
 \end{verbatim}
-and even though it has a tag in the definition (the left hand side), it does not contain a tag on the right hand side. Instead, the tag is implemented as a phantom type~\cite{haskell_phantom}: a type which does not appear on the right hand side of a type definition and so has no representation on the value level. A phantom type can be checked by the type checker but it can not be used by the user via e.g. pattern-matching. This means that from a value standpoint, the Flow type is simply a container for IO actions and the rules for the information flow control rules are implemented in the type checker alone. However, from a user standpoint, the Flow type is a tagged computation. An example of how to add five to a Flow of High value is
+and even though it has a tag in the definition (the variable {\tt tag} in the left hand side), it does not contain a tag on the right hand side. Instead, the tag is implemented as a \emph{phantom type}~\cite{haskell_phantom}: a type which does not appear on the right hand side of a type definition and so has no representation on the value level. A phantom type can be checked by the type checker but it can not be used by the user via e.g. pattern-matching. This means that from a value standpoint, the Flow type is simply a container for IO actions and the rules for the information flow control are implemented in the type checker alone. However, from a user standpoint, the Flow type is a tagged computation. An example of how to add five to a Flow of high value is
 \begin{verbatim}
     addFiveFlow :: Flow High Int -> Flow High Int
     addFiveFlow f = do
@@ -28,7 +28,7 @@ and even though it has a tag in the definition (the left hand side), it does not
 where a new Flow (the variable {\tt b}) is created and added with the given Flow {\tt f}.
 
 \subsection{Monad instance}
-Two separate monad instances were created in order to be able to handle potential code generation towards Haste, one for High and one for Low flow. If Haste was the compiler, then the High flow needed to be compiled with a call to the \emph{upg} function in JSFlow.
+Two separate monad instances were created in order to be able to handle potential code generation towards Haste, one for high and one for low flow. If Haste was the compiler, then the high flow needed to be compiled with a call to the {\tt upg} function in JSFlow.
 
 Every Monad created in Haskell must also be a Functor and an Applicative by the Functor-Applicative-Monad proposal. Starting from GHC 7.10, every Monad that is not a Functor or Applicative will generate a compile error~\cite{functor_applicative_monad}. Due to the Functor-Applicative-Monad proposal, the created Monad for the Flow type is a Functor and an Applicative as well.
 \subsubsection{Monad laws and Flow}
@@ -44,7 +44,7 @@ The first monadic law is easy to prove. It can be done in two steps:
   1. return a >>= k = Flow (IO a) >>= k
   2.                = k a
 \end{alltt}
-where the transformation on line 1 is due to the definition of return in the library and the transformation on line 2 is due to the definition of ({\tt >>=}) in the library.
+where the transformation on line 1 is due to the definition of {\tt return} in SwapIFC and the transformation on line 2 is due to the definition of ({\tt >>=}) in SwapIFC.
 
 The second law is just as easily shown.
 \begin{alltt}
@@ -52,7 +52,7 @@ The second law is just as easily shown.
   2.              = return a
   3.              = Flow (IO a)
 \end{alltt}
-The transformation between lines 1 and 2 is due to the definition of ({\tt >>=}) and the transformation on line 3 is due to the definition of return.
+The transformation between lines 1 and 2 is due to the definition of ({\tt >>=}) and the transformation on line 3 is due to the definition of {\tt return}.
 
 To show that the third law is satisfied, it is enough to show that the left hand side and the right hand side evaluate to the same value. The left hand side is evaluated as:
 \begin{alltt}
@@ -77,7 +77,7 @@ In order for the Flow type to be an instance of Functor, the function {\tt fmap}
     fmap :: Functor f => (a -> b) -> f a -> f b
     fmap f ioa = ioa >>= return . f
 \end{verbatim}
-which uses the ({\tt >>=}) and the {\tt return} functions of the monad instance~\cite{functor-monad-law}. Since the Flow type should not be allowed to be transformed into something that is not a monad, this is the implementation of {\tt fmap} the library will use.
+which uses the ({\tt >>=}) and the {\tt return} functions of the monad instance~\cite{functor-monad-law}. Since the Flow type should not be allowed to be transformed into something that is not a monad, this is the implementation of {\tt fmap} SwapIFC will use.
 \subsubsection{Functor laws and Flow}
 In order for the Flow type to have a proper implementation of {\tt fmap}, there are two laws that must be obeyed~\cite{functor-laws}, namely
 \begin{alltt}
@@ -165,7 +165,7 @@ The third law is not tricky but is it not straight-forward.
   3.                   = Flow (f x)
   4.                   = return (f x)
 \end{alltt}
-The key is to note that {\tt f} must be a function of type {\tt (a -> b)} and {\tt x} must be of type {\tt a}. Due to this, it is trivial to make the transformations on line 2 ("wrapping" the values in the {\tt Flow} monad) and applying {\tt Flow x} to {\tt Flow f} on line 3. On line 4, we go back from {\tt Flow (f x)} to {\tt return (f x)} since these are equivalent.
+The key is to note that {\tt f} must be a function of type {\tt (a -> b)} and {\tt x} must be of type {\tt a}. Due to this, it is trivial to make the transformations on line 2 ("wrapping" the values in the Flow monad) and applying {\tt Flow x} to {\tt Flow f} on line 3. On line 4, we go back from {\tt Flow (f x)} to {\tt return (f x)} since these are equivalent.
 
 The fourth law is very straight-foward. Once again, in order to prove the fourth law the right hand side and the left hand side will be evaluated individually.
 \begin{alltt}
@@ -173,7 +173,7 @@ The fourth law is very straight-foward. Once again, in order to prove the fourth
   2.              = u `ap` (Flow y)
   3.              = Flow (u y)
 \end{alltt}
-The first transformation on line 1 is due to the definitions of {\tt <*>} and {\tt pure} respectively. On line 2, we use the fact that {\tt return} will "wrap" the value of {\tt y} into the {\tt Flow} monad. Finally, on line 3 the function {\tt ap} is evaluated.
+The first transformation on line 1 is due to the definitions of {\tt <*>} and {\tt pure} respectively. On line 2, we use the fact that {\tt return} will "wrap" the value of {\tt y} into the Flow monad. Finally, on line 3 the function {\tt ap} is evaluated.
 \newline
 \newline
 Evaluating the right hand side for the fourth law is just as easilly done.
@@ -192,24 +192,24 @@ There are two more laws for applicatives that state that if the applicative is a
 and it is trivial to see that these properties do hold since it is the exact implementation of the Applicative instance for Flow.
 
 \section{Controlling the flow}
-Even though there are only two types of tags for the flow, they need to be thoroughly controlled. In order to model this, the language extensions {\tt MultiParamTypeClasses}~\cite{haskell-multiparamtypeclasses} and {\tt FunctionalDependencies}~\cite{haskell-functionaldependencies} were used. Normally, a class instance in Haskell can only take one argument, but with the extension {\tt MultiParamTypeClasses}, a created class can take several arguments. In the case for the class {\tt FlowBool}, i.e. a class that contains all operations for the Haskell type Bool wrapped in the Flow type, it is created as
+Even though there are only two types of tags for the flow, they need to be thoroughly controlled. In order to model this, the language extensions \emph{MultiParamTypeClasses}~\cite{haskell-multiparamtypeclasses} and \emph{FunctionalDependencies}~\cite{haskell-functionaldependencies} were used. Normally, a class instance in Haskell can only take one argument, but with the extension MultiParamTypeClasses, a created class can take several arguments. In the case for the class \emph{FlowBool}, i.e. a class that contains all operations for the Haskell type Bool wrapped in the Flow type, it is created as
 \begin{verbatim}
     class FlowBool t1 t2 t3 | t1 t2 -> t3 where
       -- Function implementations of boolean operators
 \end{verbatim}
-where t1, t2 and t3 are the arguments. As can be seen, given two tags, t1 and t2, it is possible to derive the resulting tag t3. This functionality is due to the extension {\tt FunctionalDependencies}. In order for Haskell to know how the different type variables relate to eachother, instance definitions must be added:
+where {\tt t1}, {\tt t2} and {\tt t3} are the arguments. As can be seen, given two tags, {\tt t1} and {\tt t2}, it is possible to derive the resulting tag {\tt t3}. This functionality is due to the extension FunctionalDependencies. In order for Haskell to know how the different type variables relate to eachother, instance definitions must be added:
 \begin{verbatim}
     instance FlowBool High High High
     instance FlowBool High Low High
     instance FlowBool Low High High
     instance FlowBool Low Low Low
 \end{verbatim}
-The instance definitions give the rules for the Haskell type system which types the type variables can have and how to derive the resulting type. As can be seen, the only way for a {\tt FlowBool} to produce something of low value is when the two type variables {\tt t1} and {\tt t2} are low. As soon as either {\tt t1} or {\tt t2} or both are high, the result will be high. This holds for all classes in the library.
+The instance definitions give the rules for the Haskell type system which types the type variables can have and how to derive the resulting type. As can be seen, the only way for a {\tt FlowBool} to produce something of low value is when the two type variables {\tt t1} and {\tt t2} are low. As soon as either {\tt t1} or {\tt t2} or both are high, the result will be high. This holds for all classes in SwapIFC.
 
 \subsection{Declassification of flows}
-When looking at the declassification dimensions mentioned in Chapter~\ref{chapter:declassification}, the library only implements the \textbf{who} dimension. The only person who can declassify information is a person who has access to the \textbf{trusted} code base (see Appendix~\ref{app:library_structure}). There is no limit as to \textbf{what} data that can be declassified other than the fact that it must be data that is tagged as {\tt High}. There is also no limit as to \textbf{when} or \textbf{where} the person can declassify data.
+When looking at the declassification dimensions mentioned in Chapter~\ref{chapter:declassification}, SwapIFC implements the \emph{who} and the \emph{what} dimension. The only person who can declassify information is a person who has access to the \emph{trusted} code base (see Appendix~\ref{app:library_structure}) and the only data that can be declassified is data that is tagged as high value. This is due to the fact that declassifying a low value makes no sense and if it is done then the programmer might not know exactly what he/she is doing. Due to this, a compile error will be given if declassification of low data occur. However, there is no limit as to \emph{when} a person can declassify data or \emph{where} a person can declassify data from.
 
-There is also no way to declassify data without using the declassification function in the trusted code base. Without the primitives {\tt declassification} and {\tt upgrade}, there should not be possible to use any operations within SwapIFC to accidently declassify or upgrade data. One could imagine a programmer that does not know exactly how to handle the data and accidently creates a bug. Could it be possible to downgrade a {\tt Flow} from {\tt High} to {\tt Low} using {\tt (>>=)}? The {\tt (>>=)} operator has the following type signature:
+There is also no way to declassify data without using the declassification function in the trusted code base. Without the primitives {\tt declassify} and {\tt upgrade}, there should not be possible to use any operations within SwapIFC to accidently declassify or upgrade data. One could imagine a programmer that does not know exactly how to handle the data and accidently creates a bug. Could it be possible to downgrade a flow from high to low using {\tt (>>=)}? The {\tt (>>=)} operator has the following type signature:
 \begin{verbatim}
     >>= :: Monad m => m a -> (a -> m b) -> m b
 \end{verbatim}
@@ -236,24 +236,52 @@ with the hopes of getting something of type {\tt Flow Low a}. However, this will
                                  -> (a -> Flow Low b)
                                  -> Flow ??? b
 \end{verbatim}
-There are two different monad instances for {\tt Flow}, one for {\tt High} and one for {\tt Low} and each has its own implementation of {\tt (>>=)}. Since the first argument to {\tt (>>=)} is of type {\tt Flow High a}, the compiler can deduce that it must use the implementation of {\tt (>>=)} that exists in the {\tt Flow High} monad instance. That means that the second argument, the function, must be of type {\tt (a -> Flow High b)}. However, the second argument in this accidental attempt is of type {\tt a -> Flow Low b} and due to this, accidental declassification can not be done by using {\tt (>>=)}. Note that this holds the other way around as well, i.e. there is no way to upgrade a value of type {\tt Flow Low a} to {\tt Flow High a} by using {\tt (>>=)}. Instead the function {\tt upgrade} must be used.
+There are two different monad instances for the Flow type, one for high and one for low values and each has its own implementation of {\tt (>>=)}. Since the first argument to {\tt (>>=)} is of type {\tt Flow High a}, the compiler can deduce that it must use the implementation of {\tt (>>=)} that exists in the {\tt Flow High} monad instance. That means that the second argument, the function, must be of type {\tt (a -> Flow High b)}. However, the second argument in this accidental attempt is of type {\tt a -> Flow Low b} and due to this, accidental declassification can not be done by using {\tt (>>=)}. Note that this holds the other way around as well, i.e. there is no way to upgrade a value of type {\tt Flow Low a} to {\tt Flow High a} by using {\tt (>>=)}. Instead the function {\tt upgrade} must be used.
 
 \subsection{Non-interference of flows}
-Due to the functional dependencies and the instance definitions, using only the primitives and not having access to the trusted code base will lead to non-interference. However, non-interference can not be guaranteed within the trusted code base due to the declassification primitive and the unsafe operations ({\tt unsafeShow} to show the value of a {\tt Flow} and {\tt unwrapValue} that will strip the {\tt Flow} and {\tt IO} monad and return the pure value). The tests described in Chapter~\ref{chapter:testing} shows that the confidentiality level of a {\tt Flow} is indeed preserved when using the primitives in the library.
+Due to the functional dependencies and the instance definitions, using only the primitives and not having access to the trusted code base will lead to non-interference. However, non-interference can not be guaranteed within the trusted code base due to the declassification primitive and the unsafe operations ({\tt unsafeShow} to show the value of a flow and {\tt unwrapValue} that will strip the flow and IO monad and return the pure value). The tests described in Chapter~\ref{chapter:testing} shows that the confidentiality level of a flow is indeed preserved when using the primitives in SwapIFC.
 
 \section{Handling side effects}
 Handling side effects in any language is a challenge from a security point of view. Potential shared states can be altered, data can be printed or exceptions could be thrown indicating an error has occurred. From the viewpoint of information flow control, all of these side effects must be monitored closely.
 
 \subsection{JSFlow and side effects}
-In order to handle side effects, JSFlow keeps track of a \emph{program counter label (pc)}. The program counter reflects the confidentiality level for guard expressions controlling branches in the program and prevents the modification of less confidential values. This is exactly how the implicit flows are handled in JSFlow as well. More formal, it must hold that:
+In order to handle side effects, JSFlow keeps track of a \emph{program counter label (pc)}. The program counter reflects the confidentiality level for guard expressions controlling branches (e.g. an if-statement) in the program and prevents the modification of less confidential values. This is exactly how the implicit flows are handled in JSFlow as well. More formal, it must hold that:
 \[
 \forall ge \in GuardExpressions: ge_c \geq pc
 \]
-where \emph{GuardExpressions} is the set of expressions within the specified guard and \(ge_c\) is the confidentiality level for the expression \(ge\). If any violations occur, the execution will halt.
+where \emph{GuardExpressions} is the set of expressions within the specified guard and \(ge_c\) is the confidentiality level for the expression \(ge\). If any violations occur, the execution will halt. In short, given two tags, the pc's tag \emph{t} and the computation's tag \emph{t'}, the following holds:
+\begin{verbatim}
+    t == High, t' == High ==> Valid
+    t == High, t' == Low  ==> Not Valid
+    t == Low,  t' == High ==> Valid
+    t == Low,  t' == Low  ==> Valid
+\end{verbatim}
 
-\subsection{Side effects in the library}
+\subsection{SwapIFC and side effects}
 \label{chapter:side-effects-library}
-Side effects are currently not supported in the library. However, it is not difficult to add support for e.g. {\tt IORef}. This is discussed more in Chapter~\ref{chapter:future-side-effects}. The function that will run the flow has the following implementation:
+Side effects in SwapIFC is implemented by creating a newtype called \emph{FlowRef}, which is a wrapper around \emph{IORef}. The FlowRef takes a tag and a value and, just as the Flow type, wraps the value around a standard Haskell structure, in this case an IORef. The tag for the FlowRef is a phantom type, just as for the Flow type.
+
+The FlowRef is implemented as
+\begin{verbatim}
+    -- newtype for IORefs within Flow
+    newtype FlowRef tag a = FlowRef (IORef a)
+
+    newFlowRef :: a -> Flow t (FlowRef t a)
+    readFlowRef :: FlowRef t a -> Flow t a
+    writeFlowRef :: FlowRef t a -> a -> Flow t ()
+    modifyFlowRef :: FlowRef t a -> (a -> a) -> Flow t ()
+\end{verbatim}
+and follows the exact same pattern as IORef does in the standard Haskell library. When creating a new FlowRef, the function {\tt newFlowRef} must be called. Since {\tt newFlowRef} returns a FlowRef within a Flow computation and the tag {\tt t} is the same, then it is guaranteed that the side effect contained in the FlowRef can only be modified in the same context as the Flow it is wrapped inside. The function {\tt readFlowRef} will read the given FlowRef and wraps the value in a Flow computation and the function {\tt writeFlowRef} will, given a FlowRef and a value, write the given to the given FlowRef and wrap the result in a Flow computation. Since the base of FlowRef is IORef, the standard function {\tt writeIORef} will be used internally and due to this, a unit-type is used in the Flow computation. Finally, {\tt modifyFlowRef} will given a FlowRef and a function apply the function to the value inside the FlowRef. Again, the return type will be a Flow computation of unit-type.
+
+Comparing the strictness of the handling of side effects between JSFlow and SwapIFC, one can see that SwapIFC is indeed stricter. Where JSFlow demands the computations to be in \textbf{at least} as high a context as the pc, SwapIFC demands the computations to be in \textbf{exactly} the same context. Given two tags, the current flow's tag \emph{t} and the FlowRef's tag \emph{t'}, the following holds for SwapIFC:
+\begin{verbatim}
+    t == High, t' == High ==> Valid
+    t == High, t' == Low  ==> Not Valid
+    t == Low,  t' == High ==> Not valid
+    t == Low,  t' == Low  ==> Valid
+\end{verbatim}
+
+The function that will run the flow has the following implementation:
 \begin{verbatim}
     runFlow :: Flow t () -> IO ()
     runFlow (Flow ioa) = do
@@ -263,11 +291,11 @@ Side effects are currently not supported in the library. However, it is not diff
                     in return ()
         Right () -> return ()
 \end{verbatim}
-When running the {\tt Flow}, the IO computation will be evaluated and as can be seen, the implementation uses Haskell's Unit-type. Due to this fact, there is no way to extract any actual value. The only thing that can be done is to run the IO computation. Information will not leak in the current implementation even when exceptions occur. This means that a person with malicious intent will not notice any difference when executing a program that throws an exception and a program which does not throw an exception.
+When running the Flow computation, the IO computation will be evaluated and as can be seen, the implementation uses Haskell's unit-type. Due to this fact, there is no way to extract any actual value. The only thing that can be done is to run the IO computation. Information will not leak in the current implementation even when exceptions occur. This means that a person with malicious intent will not notice any difference when executing a program that throws an exception and a program which does not throw an exception.
 
 \section{Integrating with Haste}
 \label{chapter:incorporating-with-haste}
-In order to integrate the library with Haste, a communication between the library and Haste had to be created. This is done by using a preprocessing directive, the same preprocessing directive that Haste will set if the compilation process is done with Haste. The key difference for how the library should behave between GHC and Haste is the {\tt return} of the high flow within the Monad instance. The main difference is highlighted in the following code snippet:
+In order to integrate SwapIFC with Haste, a communication between SwapIFC and Haste had to be created. This is done by using a preprocessing directive, the same preprocessing directive that Haste will set if the compilation process is done with Haste. The key difference for how SwapIFC should behave between GHC and Haste is the {\tt return} of the high flow within the Monad instance. The main difference is highlighted in the following code snippet:
 \begin{verbatim}
     #ifdef __HASTE__
       return = Flow . upg
@@ -280,9 +308,9 @@ If the program is compiled with Haste, then the computation given to return will
     upg :: a -> IO a
     upg = fmap fromOpaque . ffi "upg" . toOpaque
 \end{verbatim}
-which makes a FFI (Foreign Function Interface) call in order to wrap the compiled JavaScript code with a call to the JSFlow function {\tt upg}. It is made opaque in order to avoid any conversions: the value is sent to JavaScript as it is and is returned as it was rather than being converted to something JavaScript friendly. This process does not have to be done with a low flow type since it should be executed as normal code by JSFlow. The full implementation of the Monad instance can be seen in Appendix~\ref{app:instances}.
+which makes a FFI (\emph{Foreign Function Interface}) call in order to wrap the compiled JavaScript code with a call to the JSFlow function {\tt upg}. It is made opaque in order to avoid any conversions: the value is sent to JavaScript as it is and is returned as it was rather than being converted to something more JavaScript friendly. This process does not have to be done with a low flow type since it should be executed as normal code by JSFlow. The full implementation of the Monad instance can be seen in Appendix~\ref{app:instances}.
 
-The same principle as with \emph{upg} was used to implement \emph{lprint}, a function that prints the value and the corresponding tag in JSFlow. The function in SwapIFC which communicates with JSFlow was implemented as
+The same principle as with {\tt upg} was used to implement {\tt lprint}, a function that prints the value and the corresponding tag in JSFlow. The function in SwapIFC which communicates with JSFlow was implemented as
 \begin{verbatim}
     lprintHaste :: Show a => a -> IO ()
     lprintHaste = ffi "lprint" . show
@@ -293,20 +321,20 @@ Unfortunately, this solution combined with Haste will produce a corner case in J
         lprint(arguments[0]);
     }
 \end{verbatim}
-the function {\tt g} takes an argument but it is not defined in the parameter list. But every function in JavaScript have an argument object assiciated to it~\cite{js-arguments}, so calling {\tt g(42);} will indeed work since {\tt 42} will be at {\tt arguments[0]}. But checking the length field by calling {\tt g.length} will yield {\tt 0}. This will cause a problem since the code generated from Haste will check
+the function {\tt g} takes an argument but it is not defined in the parameter list. But every function in JavaScript have an argument object assiciated to it~\cite{js-arguments}, so calling {\tt g(42);} will indeed work since the value \textbf{42} will be at {\tt arguments[0]}. But checking the length field by calling {\tt g.length} will yield \textbf{0}. This will cause a problem since the code generated from Haste will check
 \begin{verbatim}
     if(f.arity === undefined) {
         f.arity = f.length;
     }
 \end{verbatim}
-but if the function {\tt f} does not have variables in the arguments list, {\tt f.length} will be {\tt 0}.
+but if the function {\tt f} does not have variables in the arguments list, {\tt f.length} will be \textbf{0}.
 
 The problem with printing using {\tt lprint} is solved by supplying an anonymous function through the FFI like below:
 \begin{verbatim}
     lprintHaste :: Show a => a -> IO ()
     lprintHaste = ffi "(function(x) { lprint(x); })" . show
 \end{verbatim}
-where the anonymous function has a variable in the arguments list. This means that the length of the function will be 1 and the problem explained above will not occur. 
+where the anonymous function has a variable in the arguments list. This means that the length of the function will be \textbf{1} and the problem explained above will not occur. 
 
 \subsection{Modifications done to Haste}
 Since JSFlow only supports ECMA-262 v5 in non-strict mode and does not support JSON~\cite{jsflow}, some modifications to Haste were needed in order to produce JavaScript source code which followed the ECMA-262 v5 standard~\cite{ecma262v5}. The code generation of Haste needed to be altered in order to not produce code for the JSON library and ECMA features that are introduced in ECMA-262 v6. Haste allows for ArrayBuffers to be produced, but since the concept of ArrayBuffer is in draft mode for ECMA-262 v6~\cite{js_arraybuffer, ecma_arraybuffer} they can not be supported by the current version of JSFlow. However, since crippling every user of Haste by removing features is not a good idea, a flag was added in case a user wants to compile towards JSFlow. This means that Haste will produce JavaScript source code with features that are introduced in ECMA-262 v6 unless the user tells the compiler to produce source code that can be dynamically checked by JSFlow.

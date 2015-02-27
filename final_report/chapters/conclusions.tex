@@ -3,11 +3,11 @@ This thesis attempted to explore how to effectively combine already created tool
 
 As explained in Chapter~\ref{chapter:prototypes}, there are numerous ways one could go about to create a library for information flow control. The fact that a monadic version was chosen had to do a lot with how easy it would be to add more features. Once the foundation is set, adding more primitives is rather trivial.
 
-SwapIFC has a large set of primitives. It has an implementation of several standard classes in Haskell. One can also use SwapIFC and make standard computations without using the primitives but it comes at a cost. As explained in Chapter~\ref{chapter:future-primitives}, using the Applicative instance is a good option if one needs primitives that are not implemented in the library. However, the cost is that one is stuck with one label - one can not combine flows with different tags using the Applicative instance.
+SwapIFC has a large set of primitives. It has an implementation of several standard classes in Haskell. One can also use SwapIFC and make standard computations without using the primitives but it comes at a cost. As explained in Chapter~\ref{chapter:future-primitives}, using the Applicative instance is a good option if one needs primitives that are not implemented in SwapIFC. However, the cost is that one is stuck with one label - one can not combine flows with different tags using the Applicative instance.
 
 When compiling with Haste, SwapIFC does fully support JSFlow with regards to low flows. Due to how the generated code is handled, support for high flows are currently not supported. However, in order for SwapIFC to be considered "ready", full support for JSFlow must be implemented.
 
-Due to the extensive testing of SwapIFC, one can make an argument that the library behaves correctly. However, since no support for high flows are present in the compiled code, full testing of the code generation could not be done. Due to this, it is impossible to say if the code generation works or not. The primitives does not allow for "downgrading" of a flow, this is a fact due to the tests. But more tests must be conducted on the code generation, especially after full support for high flows has been implemented.
+Due to the extensive testing of SwapIFC, one can make an argument that it does indeed behave correctly. However, since no support for high flows are present in the compiled code, full testing of the code generation could not be done. Due to this, it is impossible to say if the code generation works or not. The primitives does not allow for "downgrading" of a flow, this is a fact due to the tests. But more tests must be conducted on the code generation, especially after full support for high flows has been implemented.
 
 I believe that the focus for future work should be the following (with rank):
 \begin{enumerate}
@@ -16,6 +16,6 @@ I believe that the focus for future work should be the following (with rank):
   \item Add support for Haste.App.
   \item End-to-end communication, including database communication.
   \item More features for JSFlow (in particular add support for JSON and have JSFlow run in a browser).
-  \item More primitives for the library.
+  \item More primitives for SwapIFC.
 \end{enumerate}
-Even though SwapIFC seems to work, it might be worth to look at potential restructuring of the library. In theory, it could be possible to remove all primitives and simply use the IO monad.
+Even though SwapIFC seems to work, it might be worth to look at potential restructuring. In theory, it could be possible to remove all primitives and simply use the IO monad.

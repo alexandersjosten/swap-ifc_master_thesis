@@ -1,6 +1,6 @@
 \chapter{Future work}
 \label{chapter:future}
-No matter how satisfied one is, there is always more work that can be done. In this section, several different suggestions for how to proceed in the future will be presented. The suggestions are not only about how to make the library SwapIFC better, but also other potential work within the area of information flow control.
+No matter how satisfied one is, there is always more work that can be done. In this section, several different suggestions for how to proceed in the future will be presented. The suggestions are not only about how to make SwapIFC better, but also other potential work within the area of information flow control.
 
 \section{Full communication for SwapIFC to JSFlow}
 At the moment, code that is generated for high flows will not work with JSFlow. The reason for this is due to the runtime function {\tt A} along with what the actual code generation of the Haskell code generates. A simple program for a high flow is
@@ -21,38 +21,20 @@ which is the code that calls the {\tt A} function with the arguments. Here, the 
 
 Due to this, the most critical future work will be to get a full communication with high values working for JSFlow.
 
-\section{More primitives for the library}
+\section{More primitives for SwapIFC}
 \label{chapter:future-primitives}
-A library for a language is never completed until it easily supports the entire language. For SwapIFC, an easy yet time consuming extension would be to add classes and primitives for more standard classes of Haskell. Adding support for handling strings and lists within the {\tt Flow} monad is an easy next step to do. However, adding a class for every standard Haskell class would be tedious, so looking more on if it is possible to have a more general class within the {\tt Flow} monad and easily lift values into it could also be a good next step.
+A library for a language is never completed until it easily supports the entire language. For SwapIFC, an easy yet time consuming extension would be to add classes and primitives for more standard classes of Haskell. Adding support for handling strings and lists within the Flow monad is an easy next step to do. However, adding a class for every standard Haskell class would be tedious, so looking more on if it is possible to have a more general class within the Flow monad and easily lift values into it could also be a good next step.
 
-As of now, if a programmer want to use primitives for lists within a {\tt Flow} instance he or she must write the entire function him/herself. This is something one should be able to assume that a library should handle. As of right now, it can be handled using Applicative. A very simple example of adding the primitive {\tt (++)}, which given two lists concatenates them, is
+As of now, if a programmer want to use primitives for lists within a Flow instance he or she must write the entire function him/herself. This is something one should be able to assume a library should handle. As of right now, it can be handled using the Applicative instance. A very simple example of adding the primitive {\tt (++)}, which given two lists concatenates them, is
 \begin{verbatim}
     flowConcat :: Applicative f => f [a] -> f [a] -> f [a]
     flowConcat f1 f2 = (++) <$> f1 <*> f2
 \end{verbatim}
 However, it has a major drawback. Since it uses Applicative and there are two different Applicative implementations (one for {\tt High} and one for {\tt Low}), both flows ({\tt f1} and {\tt f2}) must have the same tag. So as of right now, a programmer who uses SwapIFC must either implemement the missing primitives him/herself or accept that all operands must be of the same type (in this case the same tag).
 
-\section{Add support for side effects in the library}
-\label{chapter:future-side-effects}
-As mentioned in Chapter~\ref{chapter:side-effects-library}, SwapIFC currently has no handling of side effects. A natural extension is to add support for side effects. This can be achieved by creating a {\tt newtype FlowRef} that contains an {\tt IORef}, i.e. a mutable variable in the IO monad~\cite{ioref}. A {\tt FlowRef} can then be used to enforce that every operation executed on the {\tt FlowRef} will share the same tag.
-\begin{verbatim}
-    -- newtype for IORefs within Flow
-    newtype FlowRef t a = FlowRef (IORef a)
-
-    -- function to read a FlowRef and "convert" it to a Flow
-    readFlowRef :: FlowRef t a -> Flow t a
-\end{verbatim}
-By using {\tt FlowRef}, one can have mutable variables and with that side effects. SwapIFC would then implement the same approach as JSFlow in how to handle side effects, i.e. a {\tt FlowRef} with tag {\tt t} can only be modified in a context that has a tag {\tt t'} where {\tt t' \(\leq\) t}. In principle, this means:
-\begin{verbatim}
-    t == High, t' == High ==> Valid
-    t == High, t' == Low  ==> Valid
-    t == Low,  t' == High ==> Not valid
-    t == Low,  t' == Low  ==> Valid
-\end{verbatim}
-
 \section{Add support for Haste.App}
 \label{chapter:future-haste-app}
-When using Haste one can use Haste.App to perform program slicing~\cite{haste-symposium}. The point of the program slicing is to help the programmer to split the application between the server side and the client side. Haste.App introduces three monads, \textbf{App}, \textbf{Client} and \textbf{Server} where \textbf{Client} is the monad for the client side and \textbf{Server} is the monad for the server side. \textbf{App} is the monad that ties an application together~\cite{haste-app}. When using Haste.App and compiling with Haste, the compiler will produce client side code (i.e. JavaScript code) for everything in the \textbf{Client} monad while producing a binary file for the server side for everything within the \textbf{Server} monad. This allows a programmer to write code as one application while during the compile phase have it split. Currently, SwapIFC does not support Haste.App. Even though it could work, no work has been done to support Haste.App and therefore a good idea in the future would be to look at Haste.App and ensure that SwapIFC does indeed support Haste.App.
+When using Haste one can use Haste.App to perform program slicing~\cite{haste-symposium}. The point of the program slicing is to help the programmer to split the application between the server side and the client side. Haste.App introduces three monads, \emph{App}, \emph{Client} and \emph{Server} where Client is the monad for the client side and Server is the monad for the server side. App is the monad that ties an application together~\cite{haste-app}. When using Haste.App and compiling with Haste, the compiler will produce client side code (i.e. JavaScript code) for everything in the Client monad while producing a binary file for the server side for everything within the Server monad. This allows a programmer to write code as one application while during the compile phase have it split. Currently, SwapIFC does not support Haste.App. Even though it could work, no work has been done to support Haste.App and therefore a good idea in the future would be to look at Haste.App and ensure that SwapIFC does indeed support Haste.App.
 
 \section{Remove the apply function in generated code}
 The function that is designed to handle function application in the generated JavaScript code from Haste has a flaw. As described in Chapter~\ref{chapter:incorporating-with-haste}, Haste currently has a problem with an edge case in JavaScript. Whenever there is a function that should be applied to an argument list, but the function does not have an explicit argument list, Haste will run into problem, i.e. any function that has the property
@@ -98,7 +80,7 @@ As JSFlow only supports ECMA-262 v5 in non-strict mode and does not support JSON
       "spouse" : null
     }
 \end{verbatim}
-where the key {\tt "firstName"} is mapped to the string \emph{"Sherlock"} and the key {\tt "address"} is mapped to a JSON object containing the information about the address. The challenges from an information flow control viewpoint is \emph{how to effectively guarantee that no private information is leaked through JSON objects?}. It is easy to see it is not trivial to guarantee information flow security through JSON, but should be considered as a natural next step for a dynamic system designed to guarantee information flow control in JavaScript.
+where the key {\tt "firstName"} is mapped to the string {\tt "Sherlock"} and the key {\tt "address"} is mapped to a JSON object containing the information about the address. The challenges from an information flow control viewpoint is \emph{how to effectively guarantee that no private information is leaked through JSON objects?}. It is easy to see it is not trivial to guarantee information flow security through JSON, but should be considered as a natural next step for a dynamic system designed to guarantee information flow control in JavaScript.
 
 Another feature for JSFlow would be to start add what is new in ECMA-262 v6, e.g. adding support for \emph{ArrayBuffer} which represents a generic, fixed-length binary data buffer~\cite{js_arraybuffer}. Added support for \emph{HTML5} with \emph{Websockets} and make it compatible to run in a browser should of course also be considered as important features to add.
 

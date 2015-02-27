@@ -4,7 +4,7 @@ When developing a web application, there are numerous issues the application wri
 \section{Problems with JavaScript}
 From a security standpoint with regards to information flow control, JavaScript suffers from two big problems, namely
 \begin{itemize}
-  \item It uses weak typing, i.e. it does not know at runtime the exact type of a variable or the return type of a function. This is explained more in depth in Chapter~\ref{chapter:weak-dynamic-typing}.
+  \item It uses weak typing, i.e. it can do both implicit and explicit type conversions depending on the operation, often violating the principle of least surprise (e.g. {\tt +} does not always mean addition of two numbers) and leading to hard to find bugs. This is explained more in depth in Chapter~\ref{chapter:weak-dynamic-typing}.
   \item It can gain access to sensitive information from the browser.
 \end{itemize}
 There are more problems with JavaScript in general, e.g. bad scoping semantics, poor support for the functional paradigm and a lack of modularity. Since those problems are not that important from a information flow security standpoint, it is not in the scope of this report. The curious reader can read more about those problems in~\cite{haste-lang}.

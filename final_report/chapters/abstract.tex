@@ -1,11 +1,11 @@
 \thispagestyle{empty}
 
 \begin{abstract}
-Creating a secure web application with regard to information flow control poses a big challenge and there has been a lot of research in the area of information flow control. When creating a web application, a language like JavaScript is usually used. Since JavaScript is deployed in the browser and can gain access to sensitive information, securing JavaScript application with regards to information flow control is crucial and to help with this, a system called JSFlow has been developed at Chalmers University.
-
-However, it is not enough to secure JavaScript with regards to information flow control. Research has been made to help strengthen the weak type system of JavaScript. The research includes creating new languages and creating compilers. The compiler Haste generates JavaScript code from the high-level, strict statically typed language Haskell.
-
-This thesis explores the possibility to create a library in Haskell which enables a static analysis with regards to information flow control. This library should then be compiled with Haste and produce secure JavaScript code with regards to information flow control. In doing so, the compiled code should be able to be run through JSFlow with no halted execution due to information leakage.
+This thesis explores the possibility to create a library in Haskell which enables a static analysis with regards to information flow control. This library should then be compiled with Haste and produce secure JavaScript code with regards to information flow control. In doing so, the compiled code should be able to be run through JSFlow information flow control-enforcing JavaScript interpreter with no halted execution due to information leakage.
 
 In order to create the library, three different prototypes were developed. From these prototypes, the most promising was selected. Once a proper library implementation, which involves integration with Haste and code generated towards JSFlow, had been created, thorough testing was performed to verify correctness.
+
+Creating a secure web application with regard to information flow control poses a big challenge and there has been a lot of research in the area of information flow control. When creating a web application, a language like JavaScript is usually used. Since JavaScript is deployed in the browser and can gain access to sensitive information, securing JavaScript application with regards to information flow control is crucial and to help with this, a dynamic interpreter called JSFlow has been developed at Chalmers University of Technology.
+
+However, it is not enough to secure JavaScript with regards to information flow control. Research has been made to help strengthen the weak type system of JavaScript. The research includes creating new languages and creating compilers. The compiler Haste generates JavaScript code from the high-level, strict statically typed language Haskell.
 \end{abstract}

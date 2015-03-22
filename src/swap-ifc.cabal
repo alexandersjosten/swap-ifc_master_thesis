@@ -16,7 +16,7 @@ build-type:          Simple
 cabal-version:       >=1.10
 
 library
-  exposed-modules:     SwapIFC
+  exposed-modules:     SwapIFC, SwapIFC_Trusted
   other-modules:       SwapIFC.Unsafe, SwapIFC.Types, SwapIFC.Auxiliary, SwapIFC.Haste.CodeGen
   other-extensions:    MultiParamTypeClasses, FunctionalDependencies, GADTs, CPP, FlexibleInstances, FlexibleContexts, TypeFamilies, OverloadedStrings
   build-depends:       base >=4.7 && <4.8, haste-compiler >=0.4 && <0.6

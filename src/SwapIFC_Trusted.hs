@@ -1,4 +1,4 @@
-module SwapIFC (
+module SwapIFC_Trusted (
     -- Stuff from SwapIFC.Types
     High
   , Low
@@ -13,12 +13,19 @@ module SwapIFC (
   , mkHigh
   , mkLow
   , runFlow
+  , lprint
+  , declassify
   , newFlowRef
   , readFlowRef
   , writeFlowRef
   , modifyFlowRef
   , flowGetLine
   , unlprint
+    -- Stuff from SwapIFC.Unsafe
+  , unsafeShow
+  , unwrap
+  , unwrapValue
+  , changeTag
   ) where
 
 import SwapIFC.Types
